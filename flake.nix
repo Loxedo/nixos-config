@@ -38,7 +38,7 @@
         somewm-stable = import ./pkgs/somewm.nix {
           inherit pkgs;
           src = inputs.somewm-stable;
-          version = "1.4";
+          version = "1.4.3";
           wlrootsVersion = "0.19";
         };
 
