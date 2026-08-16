@@ -35,11 +35,14 @@ The installer:
 3. verifies that the disk is `/dev/nvme0n1`, matching this host's Disko layout;
 4. prints the current partition table;
 5. requires the exact confirmation `ERASE-NVME0N1`;
-6. runs Disko to destroy, repartition, format, and mount the disk;
-7. copies the flake into `/mnt/etc/nixos`; and
-8. runs `nixos-install --flake /mnt/etc/nixos#nitro-v15`.
+6. uses the Disko revision pinned in `flake.lock`;
+7. runs Disko to destroy, repartition, format, and mount the disk;
+8. copies the flake into `/mnt/etc/nixos`;
+9. runs `nixos-install --flake /mnt/etc/nixos#nitro-v15`; and
+10. prompts for the `loxedo` user's password before rebooting.
 
 The only disk-destructive operation is therefore behind an explicit confirmation.
+No password or password hash is committed to the public repository.
 
 ## Development validation
 

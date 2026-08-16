@@ -15,7 +15,7 @@ if [[ $EUID -eq 0 ]]; then
   exit 1
 fi
 
-for cmd in nix lsblk; do
+for cmd in nix lsblk nixos-install nixos-generate-config mountpoint; do
   command -v "$cmd" >/dev/null || {
     echo "Missing required command: $cmd" >&2
     exit 1
@@ -69,12 +69,18 @@ fi
 
 sudo umount -R /mnt 2>/dev/null || true
 
-# Disko owns partitioning, formatting, and mounting. Do not run wipefs here:
-# having a single tool own the disk lifecycle avoids two competing layouts.
+# Use the exact Disko revision pinned by this repository's flake.lock instead
+# of silently switching to a different release at install time.
+disko_rev="$(nix eval --raw --extra-experimental-features 'nix-command flakes' \
+  --expr 'let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in lock.nodes.disko.locked.rev')"
+
+disko_ref="github:nix-community/disko/${disko_rev}"
+
 echo
+echo "Using pinned Disko revision: $disko_rev"
 echo 'Partitioning and formatting with Disko...'
 sudo nix --extra-experimental-features 'nix-command flakes' run \
-  github:nix-community/disko/latest -- \
+  "$disko_ref" -- \
   --mode destroy,format,mount \
   --yes-wipe-all-disks \
   --flake "$repo_root#nitro-v15"
@@ -103,6 +109,14 @@ echo 'Installing NixOS from the flake...'
 sudo nixos-install \
   --no-root-password \
   --flake /mnt/etc/nixos#nitro-v15
+
+# The declarative user intentionally has no password in the public repository.
+# NixOS documents that such users cannot perform password logins until passwd
+# is run. Set the real password interactively inside the freshly installed
+# system before rebooting, rather than committing a password or hash to Git.
+echo
+echo 'Set the password for the loxedo user before rebooting.'
+sudo nixos-enter --root /mnt -c 'passwd loxedo'
 
 echo
 echo 'Installation finished successfully.'
