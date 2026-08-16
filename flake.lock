@@ -59,6 +59,23 @@
         "type": "github"
       }
     },
+    "lgi": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785273917,
+        "narHash": "sha256-A4kxj6T4TG6rPKAZadUh6ikaUV5jwO7bjQtDVo6Tdqg=",
+        "owner": "lgi-devs",
+        "repo": "lgi",
+        "rev": "9949c47e6eacadfcb3cbac1c41517d78664783cf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lgi-devs",
+        "repo": "lgi",
+        "rev": "9949c47e6eacadfcb3cbac1c41517d78664783cf",
+        "type": "github"
+      }
+    },
     "nix-flatpak": {
       "locked": {
         "lastModified": 1783368811,
@@ -127,6 +144,7 @@
         "crystal": "crystal",
         "disko": "disko",
         "home-manager": "home-manager",
+        "lgi": "lgi",
         "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs",
         "somewm-dev": "somewm-dev",
