@@ -12,9 +12,6 @@
     modesetting.enable = true;
     nvidiaSettings = false;
 
-    # Fine-grained runtime power management is useful when the HDMI display is
-    # disconnected. With HDMI-A-2 physically wired to the RTX, the dGPU will
-    # remain awake whenever that monitor is active.
     powerManagement.enable = true;
     powerManagement.finegrained = true;
 

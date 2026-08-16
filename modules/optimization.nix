@@ -1,6 +1,5 @@
 { ... }:
 {
-  systemd.oomd.enable = true;
   services.fwupd.enable = true;
 
   # Hardware/service policy for this machine.
