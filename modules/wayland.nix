@@ -1,10 +1,6 @@
 { pkgs, inputs, ... }:
-let
-  somewm = inputs.self.packages.${pkgs.system}.somewm-stable;
-in
 {
   environment.systemPackages = with pkgs; [
-    somewm
     wl-clipboard
     wayland-utils
     wtype
@@ -28,11 +24,13 @@ in
     };
   };
 
+  # Temporary bootstrap session: keep greetd usable while SomeWM/LGI is fixed.
+  # SomeWM is intentionally not referenced here so it cannot block the system build.
   services.greetd = {
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd ${somewm}/bin/somewm";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd ${pkgs.bash}/bin/bash -l";
         user = "greeter";
       };
     };
