@@ -6,7 +6,7 @@
   # Hardware/service policy for this machine.
   services.printing.enable = false;
   services.avahi.enable = false;
-  services.modemmanager.enable = false;
+  networking.modemmanager.enable = false;
 
   # Bluetooth remains installed for emergency/occasional use, but is never
   # powered on automatically.
