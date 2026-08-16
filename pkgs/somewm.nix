@@ -1,10 +1,5 @@
 { pkgs, src, version, wlrootsVersion }:
 
-let
-  patchedLgi = pkgs.lua51Packages.lgi.overrideAttrs (old: {
-    patches = (old.patches or []) ++ [ ./lgi-glib-2.86-regression.patch ];
-  });
-in
 pkgs.stdenv.mkDerivation {
   pname = "somewm";
   inherit version src;
@@ -30,12 +25,13 @@ pkgs.stdenv.mkDerivation {
     gdk-pixbuf
     pam
     lua5_1
+    lua51Packages.lgi
     pixman
     libdisplay-info
     udev
     seatd
     libxcb-wm
-  ] ++ [ patchedLgi ];
+  ];
 
   mesonBuildType = "release";
 
