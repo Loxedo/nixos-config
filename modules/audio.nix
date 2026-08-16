@@ -16,6 +16,5 @@
     qpwgraph
     pavucontrol
     wireplumber
-    helvum
   ];
 }
