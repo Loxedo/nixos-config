@@ -35,18 +35,20 @@
         config.allowUnfree = true;
       };
     in {
-      packages.${system}.somewm-stable = import ./pkgs/somewm.nix {
-        inherit pkgs;
-        src = inputs.somewm-stable;
-        version = "1.4";
-        wlrootsVersion = "0.19";
-      };
+      packages.${system} = {
+        somewm-stable = import ./pkgs/somewm.nix {
+          inherit pkgs;
+          src = inputs.somewm-stable;
+          version = "1.4";
+          wlrootsVersion = "0.19";
+        };
 
-      packages.${system}.somewm-dev = import ./pkgs/somewm.nix {
-        inherit pkgs;
-        src = inputs.somewm-dev;
-        version = "2.0-dev";
-        wlrootsVersion = "0.20";
+        somewm-dev = import ./pkgs/somewm.nix {
+          inherit pkgs;
+          src = inputs.somewm-dev;
+          version = "2.0-dev";
+          wlrootsVersion = "0.20";
+        };
       };
 
       nixosConfigurations.nitro-v15 = nixpkgs.lib.nixosSystem {
