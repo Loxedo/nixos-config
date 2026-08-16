@@ -67,10 +67,5 @@
           }
         ];
       };
-
-      # The disk configuration intentionally targets only the existing Linux
-      # partition (p2) so the Windows NTFS partition, MSR and EFI system
-      # partition are never part of a destructive Disko operation.
-      diskoConfigurations.nitro-v15 = ./hosts/nitro-v15/disko.nix;
     };
 }
