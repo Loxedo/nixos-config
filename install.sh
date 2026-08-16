@@ -4,8 +4,9 @@ set -euo pipefail
 # Clean-install workflow for this Acer Nitro ANV15-51.
 #
 # This machine is intentionally configured as a single-disk NixOS system.
-# The installer discovers the internal NVMe disk, shows it, asks for an
-# explicit confirmation, then lets Disko destroy/repartition that disk.
+# The installer validates the complete flake before doing anything destructive,
+# then discovers the internal NVMe disk, shows it, asks for an explicit
+# confirmation, and lets Disko destroy/repartition that disk.
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$repo_root"
@@ -15,6 +16,12 @@ if [[ $EUID -eq 0 ]]; then
   exit 1
 fi
 
+# The installed NixOS system enables flakes declaratively, but that setting
+# cannot affect the NixOS live ISO before the target system exists. Nix reads
+# NIX_CONFIG for the current process tree, so this enables flakes for the live
+# installer and every Nix command it launches without modifying the target.
+export NIX_CONFIG='experimental-features = nix-command flakes'
+
 for cmd in nix lsblk nixos-install nixos-generate-config mountpoint; do
   command -v "$cmd" >/dev/null || {
     echo "Missing required command: $cmd" >&2
@@ -22,10 +29,25 @@ for cmd in nix lsblk nixos-install nixos-generate-config mountpoint; do
   }
 done
 
-if ! nix --extra-experimental-features 'nix-command flakes' --version >/dev/null 2>&1; then
-  echo "Nix with flakes support is required." >&2
+if ! nix --version >/dev/null 2>&1; then
+  echo "A working Nix installation is required." >&2
   exit 1
 fi
+
+# Run a complete preflight build before touching the disk. This is deliberate:
+# a failure in SomeWM/LGI/wlroots or any other system package must stop the
+# installer BEFORE the existing filesystem is destroyed.
+echo
+echo 'Running preflight build of the complete NixOS configuration...'
+if ! nix build "$repo_root#nixosConfigurations.nitro-v15.config.system.build.toplevel" --no-link; then
+  echo
+  echo 'Preflight build failed. The disk has NOT been modified.' >&2
+  echo 'Fix the reported build error and run ./install.sh again.' >&2
+  exit 1
+fi
+
+echo
+echo 'Preflight build passed.'
 
 mapfile -t nvme_disks < <(
   lsblk -dnpo NAME,TYPE | awk '$2 == "disk" && $1 ~ /^\/dev\/nvme[0-9]+n[0-9]+$/ {print $1}'
@@ -71,15 +93,13 @@ sudo umount -R /mnt 2>/dev/null || true
 
 # Use the exact Disko revision pinned by this repository's flake.lock instead
 # of silently switching to a different release at install time.
-disko_rev="$(nix eval --raw --extra-experimental-features 'nix-command flakes' \
-  --expr 'let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in lock.nodes.disko.locked.rev')"
-
+disko_rev="$(nix eval --raw --expr 'let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in lock.nodes.disko.locked.rev')"
 disko_ref="github:nix-community/disko/${disko_rev}"
 
 echo
 echo "Using pinned Disko revision: $disko_rev"
 echo 'Partitioning and formatting with Disko...'
-sudo nix --extra-experimental-features 'nix-command flakes' run \
+sudo env NIX_CONFIG="$NIX_CONFIG" nix run \
   "$disko_ref" -- \
   --mode destroy,format,mount \
   --yes-wipe-all-disks \
@@ -106,7 +126,7 @@ fi
 
 echo
 echo 'Installing NixOS from the flake...'
-sudo nixos-install \
+sudo env NIX_CONFIG="$NIX_CONFIG" nixos-install \
   --no-root-password \
   --flake /mnt/etc/nixos#nitro-v15
 
