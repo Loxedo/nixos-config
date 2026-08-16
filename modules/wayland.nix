@@ -32,7 +32,7 @@ in
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --remember --cmd ${somewm}/bin/somewm";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd ${somewm}/bin/somewm";
         user = "greeter";
       };
     };
