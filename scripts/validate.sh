@@ -7,6 +7,8 @@ cd "$repo_root"
 command -v nix >/dev/null || { echo 'nix is required'; exit 1; }
 command -v bash >/dev/null || { echo 'bash is required'; exit 1; }
 
+export NIX_CONFIG='experimental-features = nix-command flakes'
+
 bash -n install.sh
 bash -n scripts/hardware-check.sh
 
@@ -22,6 +24,14 @@ if grep -RInE '(^|[^A-Za-z])(picom|i3lock|xrandr|xset|xrdb|redshift)([^A-Za-z]|$
   exit 1
 fi
 
-nix flake check
+# The SomeWM derivation must not replace Nix's generated PKG_CONFIG_PATH.
+if grep -n '^[[:space:]]*PKG_CONFIG_PATH[[:space:]]*=' pkgs/somewm.nix; then
+  echo 'ERROR: SomeWM must not override PKG_CONFIG_PATH.' >&2
+  exit 1
+fi
 
-echo 'Static validation passed.'
+# Exercise the exact system build that the installer preflights. This catches
+# SomeWM/LGI/wlroots failures before the disk-destructive phase.
+nix build '.#nixosConfigurations.nitro-v15.config.system.build.toplevel' --no-link
+
+echo 'Static and system-build validation passed.'

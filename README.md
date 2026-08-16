@@ -28,12 +28,26 @@ cd nixos-config
 ./install.sh
 ```
 
-The installer:
+The live ISO is not your installed NixOS system, so its Nix configuration cannot
+inherit `nix.settings.experimental-features` from this repository before the target
+system exists. The installer therefore sets `NIX_CONFIG` for its own process tree.
+This enables `nix-command` and flakes without requiring a manual nix.conf edit.
+
+Before the disk is touched, the installer builds:
+
+```text
+nixosConfigurations.nitro-v15.config.system.build.toplevel
+```
+
+This is intentional. A failure in SomeWM, LGI, wlroots, NVIDIA, or any other system
+component stops the installer before partitioning or formatting the disk.
+
+After the preflight build succeeds, the installer:
 
 1. requires a normal live-user shell rather than root;
 2. verifies that exactly one internal NVMe disk exists;
 3. verifies that the disk is `/dev/nvme0n1`, matching this host's Disko layout;
-4. prints the current partition table;
+4. prints the current disk layout;
 5. requires the exact confirmation `ERASE-NVME0N1`;
 6. uses the Disko revision pinned in `flake.lock`;
 7. runs Disko to destroy, repartition, format, and mount the disk;
@@ -41,14 +55,25 @@ The installer:
 9. runs `nixos-install --flake /mnt/etc/nixos#nitro-v15`; and
 10. prompts for the `loxedo` user's password before rebooting.
 
-The only disk-destructive operation is therefore behind an explicit confirmation.
 No password or password hash is committed to the public repository.
+
+## SomeWM packaging
+
+SomeWM 1.4.3 performs a C-based LGI probe during Meson configuration. The Nix
+package keeps Lua 5.1 and `lua51Packages.lgi` in the same package set and exposes
+LGI's Lua module paths explicitly.
+
+Do **not** replace `PKG_CONFIG_PATH` inside the derivation. Nix constructs that
+variable from the build inputs. Overriding it with only LGI's directory hides the
+pkg-config files for wlroots, Wayland, GLib, Cairo, and related dependencies and can
+produce misleading `wlroots not found` errors.
 
 ## Development validation
 
 ```bash
 ./scripts/validate.sh
 nix flake check
+nix build .#nixosConfigurations.nitro-v15.config.system.build.toplevel --no-link
 sudo nixos-rebuild build --flake .#nitro-v15
 ```
 

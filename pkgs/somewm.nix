@@ -2,6 +2,7 @@
 
 let
   lgi = pkgs.lua51Packages.lgi;
+  lua = pkgs.lua5_1;
   wlroots = pkgs."wlroots_${builtins.replaceStrings [ "." ] [ "_" ] wlrootsVersion}";
 in
 pkgs.stdenv.mkDerivation {
@@ -29,18 +30,27 @@ pkgs.stdenv.mkDerivation {
     pango
     gdk-pixbuf
     pam
-    lua5_1
+    lua
     pixman
     libdisplay-info
     udev
     seatd
     libxcb-wm
     xcbutil
-  ] ++ [ lgi wlroots ];
+    lgi
+    wlroots
+  ];
 
+  # SomeWM's release/1.4 branch performs a real C-based LGI probe during
+  # Meson configuration. Keep Lua and LGI on the exact same Lua 5.1 package
+  # set and expose both the Lua module tree and LGI's native module tree.
   LUA_PATH = "${lgi}/share/lua/5.1/?.lua;${lgi}/share/lua/5.1/?/init.lua;;";
-  LUA_CPATH = "${lgi}/lib/lua/5.1/lgi/?.so;;";
-  PKG_CONFIG_PATH = "${lgi}/lib/pkgconfig";
+  LUA_CPATH = "${lgi}/lib/lua/5.1/?.so;${lgi}/lib/lua/5.1/lgi/?.so;;";
+
+  # Do not override PKG_CONFIG_PATH here. Nix's build environment already adds
+  # every build input's pkgconfig directory; replacing it makes Meson unable to
+  # discover wlroots, Wayland, Cairo, GLib, etc., which presents as misleading
+  # "wlroots not found" errors even when the package is in buildInputs.
 
   mesonBuildType = "release";
 
