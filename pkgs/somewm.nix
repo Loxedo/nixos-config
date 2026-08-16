@@ -1,11 +1,10 @@
 { pkgs, src, lgiSrc, version, wlrootsVersion }:
 
 let
-  lgi = pkgs.lua51Packages.lgi.overrideAttrs (old: {
+  lgi = import ./lgi-upstream.nix {
+    inherit pkgs;
     src = lgiSrc;
-    version = "0.9.2-unstable-2026-02-05";
-    patches = [ ];
-  });
+  };
 in
 pkgs.stdenv.mkDerivation {
   pname = "somewm";
@@ -39,9 +38,7 @@ pkgs.stdenv.mkDerivation {
     libxcb-wm
   ] ++ [ lgi ];
 
-  # SomeWM's Meson configure step compiles and runs an LGI check. Nixpkgs
-  # installs LGI separately from the Lua interpreter, so expose its Lua module
-  # and C module paths explicitly to the configure-time test.
+  # SomeWM's configure step compiles and runs lgi-check against Lua 5.1.
   LUA_PATH = "${lgi}/share/lua/5.1/?.lua;${lgi}/share/lua/5.1/?/init.lua";
   LUA_CPATH = "${lgi}/lib/lua/5.1/?.so;${lgi}/lib/lua/5.1/?/init.so";
 
