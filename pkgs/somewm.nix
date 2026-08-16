@@ -1,7 +1,11 @@
-{ pkgs, src, version, wlrootsVersion }:
+{ pkgs, src, lgiSrc, version, wlrootsVersion }:
 
 let
-  lgi = pkgs.lua51Packages.lgi;
+  lgi = pkgs.lua51Packages.lgi.overrideAttrs (old: {
+    src = lgiSrc;
+    version = "0.9.2-unstable-2026-02-05";
+    patches = [ ];
+  });
 in
 pkgs.stdenv.mkDerivation {
   pname = "somewm";
