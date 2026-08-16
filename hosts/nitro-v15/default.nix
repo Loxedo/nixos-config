@@ -1,4 +1,6 @@
-{ config, pkgs, lib, inputs, ... }:
+{
+  config, pkgs, lib, inputs, ...
+}:
 {
   imports = [
     ./hardware.nix
@@ -15,6 +17,11 @@
     ../../modules/flatpak.nix
     ../../modules/optimization.nix
   ];
+
+  # NVIDIA is distributed under an unfree license. This must be configured on
+  # the NixOS module set itself; setting allowUnfree on the standalone `pkgs`
+  # used by flake package outputs is not sufficient for nixosSystem evaluation.
+  nixpkgs.config.allowUnfree = true;
 
   networking.hostName = "nitro-v15";
 
