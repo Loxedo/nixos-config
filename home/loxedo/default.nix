@@ -11,7 +11,6 @@ let
     cp ${./crystal/autorun.sh} "$out/main/autorun.sh"
     chmod +x "$out/main/autorun.sh"
   '';
-  somewm = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.somewm-stable;
 in
 {
   home.username = "loxedo";
