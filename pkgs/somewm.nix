@@ -37,8 +37,8 @@ pkgs.stdenv.mkDerivation {
     seatd
     libxcb-wm
     wlroots_0_19
-    xcb-util
     xcb-util-wm
+    xcbutil
   ] ++ [ lgi ];
 
   # SomeWM's configure step compiles and runs lgi-check against the Lua 5.1
