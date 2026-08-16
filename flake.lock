@@ -1,0 +1,177 @@
+{
+  "nodes": {
+    "crystal": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1706906902,
+        "narHash": "sha256-x9wKUZI0JemsNsa8CclUP/ho4QT4/XgOgOK77dXdEfI=",
+        "owner": "namishh",
+        "repo": "crystal",
+        "rev": "58a0470a52b84a96922e71a14952e7fdca838055",
+        "type": "github"
+      },
+      "original": {
+        "owner": "namishh",
+        "ref": "aura",
+        "repo": "crystal",
+        "type": "github"
+      }
+    },
+    "disko": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1768920986,
+        "narHash": "sha256-CNzzBsRhq7gg4BMBuTDObiWDH/rFYHEuDRVOwCcwXw4=",
+        "owner": "nix-community",
+        "repo": "disko",
+        "rev": "de5708739256238fb912c62f03988815db89ec9a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "ref": "latest",
+        "repo": "disko",
+        "type": "github"
+      }
+    },
+    "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1785119570,
+        "narHash": "sha256-Rgs2xKnGLFWQscxUaXX07oyZeuMDOHEbqDOsgliLFGM=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "d4fd24667c8cbef124bb70a20380cab75ec8474d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "ref": "release-26.05",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "nix-flatpak": {
+      "locked": {
+        "lastModified": 1783368811,
+        "narHash": "sha256-0H8jDwR4Kegb3heaTrH1ftbgKfZVDT8JE+46uXxDy/Q=",
+        "owner": "gmodena",
+        "repo": "nix-flatpak",
+        "rev": "20d42f0ee98c9fe9f85e8d1de474f1409ed10d05",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gmodena",
+        "repo": "nix-flatpak",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1786711500,
+        "narHash": "sha256-QvnceIGTBeDvDd9oCn+GvdsnkquliuwbVgpiRH68qaQ=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "02e08985a27c65ffd33d434eeb2e660a2e4dc84d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-26.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1784007870,
+        "narHash": "sha256-djcLt/JJphyNt4eDY9XTly+/WbCK5lqWq9lSgCmJkkQ=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "18b9261cb3294b6d2a06d03f96872827b8fe2698",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1784007870,
+        "narHash": "sha256-djcLt/JJphyNt4eDY9XTly+/WbCK5lqWq9lSgCmJkkQ=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "18b9261cb3294b6d2a06d03f96872827b8fe2698",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "crystal": "crystal",
+        "disko": "disko",
+        "home-manager": "home-manager",
+        "nix-flatpak": "nix-flatpak",
+        "nixpkgs": "nixpkgs",
+        "somewm-dev": "somewm-dev",
+        "somewm-stable": "somewm-stable"
+      }
+    },
+    "somewm-dev": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1786721002,
+        "narHash": "sha256-YbeHSXAA6s5yykDBG6CytgkVevh5HhAIdHGczGe+cNQ=",
+        "owner": "trip-zip",
+        "repo": "somewm",
+        "rev": "96989c7431138cdbb35fae1b6ee1d00a34b7bbe8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "trip-zip",
+        "ref": "main",
+        "repo": "somewm",
+        "type": "github"
+      }
+    },
+    "somewm-stable": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1786670443,
+        "narHash": "sha256-GGFfMCvpPKaCS4xu1JH3TiPBJjMNLn+9fCsixUl0AUI=",
+        "owner": "trip-zip",
+        "repo": "somewm",
+        "rev": "f54f4d0f7a6051fd390aa6a795132800fbf0e924",
+        "type": "github"
+      },
+      "original": {
+        "owner": "trip-zip",
+        "ref": "release/1.4",
+        "repo": "somewm",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
