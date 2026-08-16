@@ -16,6 +16,7 @@ pkgs.stdenv.mkDerivation {
     pkg-config
     wayland-scanner
     git
+    gobject-introspection
   ];
 
   buildInputs = with pkgs; [
@@ -39,8 +40,9 @@ pkgs.stdenv.mkDerivation {
   ] ++ [ lgi ];
 
   # SomeWM's configure step compiles and runs lgi-check against Lua 5.1.
+  # LGI installs its C module one directory below the Lua module root.
   LUA_PATH = "${lgi}/share/lua/5.1/?.lua;${lgi}/share/lua/5.1/?/init.lua";
-  LUA_CPATH = "${lgi}/lib/lua/5.1/?.so;${lgi}/lib/lua/5.1/?/init.so";
+  LUA_CPATH = "${lgi}/lib/lua/5.1/lgi/?.so";
 
   mesonBuildType = "release";
 
