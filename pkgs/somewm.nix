@@ -31,8 +31,9 @@ pkgs.stdenv.mkDerivation {
     seatd
   ];
 
+  mesonBuildType = "release";
+
   mesonFlags = [
-    "-Dbuildtype=release"
     "-Db_sanitize=none"
     "-Dwlroots_version=${wlrootsVersion}"
     "-Dxwayland=enabled"
