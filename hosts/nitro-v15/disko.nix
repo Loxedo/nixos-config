@@ -1,35 +1,66 @@
 { ... }:
 {
-  # IMPORTANT: this is /dev/nvme0n1p2 only, not the whole NVMe disk.
-  # p1 (EFI), p3 (Windows MSR) and p4 (Windows NTFS) are intentionally outside
-  # the Disko target and remain untouched by the clean-install workflow.
+  # Clean partition layout:
+  # - EFI (1 GiB)
+  # - Linux root (remaining space)
+  # No Windows or multi-boot complexity
   disko.devices.disk.nixos = {
     type = "disk";
-    device = "/dev/disk/by-partuuid/2d1d0aae-7888-488c-af75-a60b3ad1b866";
+    device = "/dev/nvme0n1";
 
     content = {
-      type = "btrfs";
-      extraArgs = [ "-L" "NIXOS" ];
-
-      subvolumes = {
-        "@root" = {
-          mountpoint = "/";
-          mountOptions = [ "compress=zstd:3" "noatime" ];
+      type = "gpt";
+      partitions = {
+        ESP = {
+          label = "ESP";
+          size = "1G";
+          type = "EF00";
+          content = {
+            type = "filesystem";
+            format = "vfat";
+            mountpoint = "/boot";
+            mountOptions = [ "umask=0077" ];
+          };
         };
 
-        "@home" = {
-          mountpoint = "/home";
-          mountOptions = [ "compress=zstd:3" "noatime" ];
-        };
+        root = {
+          size = "100%";
+          type = "8300";
+          content = {
+            type = "btrfs";
+            extraArgs = [ "-L" "NIXOS" ];
+            subvolumes = {
+              "@root" = {
+                mountpoint = "/";
+                mountOptions = [ "compress=zstd:3" "noatime" ];
+              };
 
-        "@nix" = {
-          mountpoint = "/nix";
-          mountOptions = [ "compress=zstd:3" "noatime" ];
-        };
+              "@home" = {
+                mountpoint = "/home";
+                mountOptions = [ "compress=zstd:3" "noatime" ];
+              };
 
-        "@swap" = {
-          mountpoint = "/swap";
-          mountOptions = [ "noatime" ];
+              "@nix" = {
+                mountpoint = "/nix";
+                mountOptions = [ "compress=zstd:3" "noatime" ];
+              };
+
+              "@swap" = {
+                mountpoint = "/swap";
+                mountOptions = [ "noatime" ];
+              };
+
+              "@cache" = {
+                mountpoint = "/var/cache";
+                mountOptions = [ "compress=zstd:3" "noatime" ];
+              };
+
+              "@log" = {
+                mountpoint = "/var/log";
+                mountOptions = [ "compress=zstd:3" "noatime" ];
+              };
+            };
+          };
         };
       };
     };
