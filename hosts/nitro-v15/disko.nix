@@ -1,9 +1,7 @@
 { ... }:
 {
-  # Clean partition layout:
-  # - EFI (1 GiB)
-  # - Linux root (remaining space)
-  # No Windows or multi-boot complexity
+  # This host is a single-disk installation. The installer verifies that the
+  # detected device is /dev/nvme0n1 before invoking Disko.
   disko.devices.disk.nixos = {
     type = "disk";
     device = "/dev/nvme0n1";
@@ -34,27 +32,22 @@
                 mountpoint = "/";
                 mountOptions = [ "compress=zstd:3" "noatime" ];
               };
-
               "@home" = {
                 mountpoint = "/home";
                 mountOptions = [ "compress=zstd:3" "noatime" ];
               };
-
               "@nix" = {
                 mountpoint = "/nix";
                 mountOptions = [ "compress=zstd:3" "noatime" ];
               };
-
               "@swap" = {
                 mountpoint = "/swap";
                 mountOptions = [ "noatime" ];
               };
-
               "@cache" = {
                 mountpoint = "/var/cache";
                 mountOptions = [ "compress=zstd:3" "noatime" ];
               };
-
               "@log" = {
                 mountpoint = "/var/log";
                 mountOptions = [ "compress=zstd:3" "noatime" ];
