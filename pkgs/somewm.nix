@@ -1,10 +1,9 @@
-{ pkgs, src, lgiSrc, version, wlrootsVersion }:
+{ pkgs, src, version, wlrootsVersion }:
 
 let
-  lgi = import ./lgi-upstream.nix {
-    inherit pkgs;
-    src = lgiSrc;
-  };
+  # Use nixpkgs' Lua 5.1 LGI package. This keeps LGI and Lua in the same
+  # package set and avoids the previous custom LGI derivation/path mismatch.
+  lgi = pkgs.lua51Packages.lgi;
 in
 pkgs.stdenv.mkDerivation {
   pname = "somewm";
@@ -39,10 +38,12 @@ pkgs.stdenv.mkDerivation {
     libxcb-wm
   ] ++ [ lgi ];
 
-  # SomeWM's configure step compiles and runs lgi-check against Lua 5.1.
-  # LGI installs its C module one directory below the Lua module root.
-  LUA_PATH = "${lgi}/share/lua/5.1/?.lua;${lgi}/share/lua/5.1/?/init.lua";
-  LUA_CPATH = "${lgi}/lib/lua/5.1/lgi/?.so";
+  # SomeWM's configure step compiles and runs lgi-check against the Lua 5.1
+  # library. Meson's cc.run() inherits the build environment, so expose the
+  # exact LGI package that belongs to the Lua interpreter used by SomeWM.
+  LUA_PATH = "${lgi}/share/lua/5.1/?.lua;${lgi}/share/lua/5.1/?/init.lua;;";
+  LUA_CPATH = "${lgi}/lib/lua/5.1/lgi/?.so;;";
+  PKG_CONFIG_PATH = "${lgi}/lib/pkgconfig";
 
   mesonBuildType = "release";
 
@@ -51,6 +52,7 @@ pkgs.stdenv.mkDerivation {
     "-Dwlroots_version=${wlrootsVersion}"
     "-Dxwayland=enabled"
     "-Dpam=enabled"
+    "-Dlua_pkg=lua5.1"
   ];
 
   doCheck = false;
