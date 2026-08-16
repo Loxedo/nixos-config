@@ -1,5 +1,8 @@
 { pkgs, src, version, wlrootsVersion }:
 
+let
+  lgi = pkgs.lua51Packages.lgi;
+in
 pkgs.stdenv.mkDerivation {
   pname = "somewm";
   inherit version src;
@@ -25,13 +28,18 @@ pkgs.stdenv.mkDerivation {
     gdk-pixbuf
     pam
     lua5_1
-    lua51Packages.lgi
     pixman
     libdisplay-info
     udev
     seatd
     libxcb-wm
-  ];
+  ] ++ [ lgi ];
+
+  # SomeWM's Meson configure step compiles and runs an LGI check. Nixpkgs
+  # installs LGI separately from the Lua interpreter, so expose its Lua module
+  # and C module paths explicitly to the configure-time test.
+  LUA_PATH = "${lgi}/share/lua/5.1/?.lua;${lgi}/share/lua/5.1/?/init.lua";
+  LUA_CPATH = "${lgi}/lib/lua/5.1/?.so;${lgi}/lib/lua/5.1/?/init.so";
 
   mesonBuildType = "release";
 
