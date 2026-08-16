@@ -29,6 +29,12 @@
   i18n.defaultLocale = "es_AR.UTF-8";
   console.keyMap = "la-latin1";
 
+  # The font used by Alacritty and the Crystal/SomeWM desktop is installed
+  # system-wide. NixOS documents that GUI fonts belong in fonts.packages.
+  fonts.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+  ];
+
   users.users.loxedo = {
     isNormalUser = true;
     description = "Loxedo";
@@ -45,7 +51,7 @@
       experimental-features = [ "nix-command" "flakes" ];
       auto-optimise-store = true;
       builders-use-substitutes = true;
-      trusted-users = [ "root" "loxedo" ];
+      trusted-users = [ "root" ];
     };
 
     gc = {
