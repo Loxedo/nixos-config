@@ -29,6 +29,7 @@ pkgs.stdenv.mkDerivation {
     libdisplay-info
     udev
     seatd
+    xorg.xcbutilwm
   ];
 
   mesonBuildType = "release";
