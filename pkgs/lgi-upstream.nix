@@ -14,24 +14,21 @@ pkgs.stdenv.mkDerivation {
     pkgs.libffi
   ];
 
-  makeFlags = [
-    "PREFIX=$(out)"
-    "LUA_VERSION=5.1"
-    "LUA_CFLAGS=-I${pkgs.lua5_1}/include"
-    "LUA_LIB=-L${pkgs.lua5_1}/lib -llua"
-  ];
+  dontConfigure = true;
 
   buildPhase = ''
-    make -C lgi all ${pkgs.lib.concatStringsSep " " makeFlags}
-  '';
-
-  installPhase = ''
-    make -C lgi install PREFIX=$out LUA_VERSION=5.1 \
-      LUA_CFLAGS="-I${pkgs.lua5_1}/include" \
+    make -C lgi all \
+      PREFIX=$out \
+      LUA_VERSION=5.1 \
+      LUA_CFLAGS=-I${pkgs.lua5_1}/include \
       LUA_LIB="-L${pkgs.lua5_1}/lib -llua"
   '';
 
-  dontConfigure = true;
+  installPhase = ''
+    make -C lgi install \
+      PREFIX=$out \
+      LUA_VERSION=5.1
+  '';
 
   meta = with pkgs.lib; {
     description = "Dynamic Lua binding to GObject libraries using GObject-Introspection";
