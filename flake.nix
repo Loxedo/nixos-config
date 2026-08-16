@@ -22,12 +22,6 @@
       flake = false;
     };
 
-    # Upstream LGI fix for GLib >= 2.87/2.88 enum representation.
-    lgi = {
-      url = "github:lgi-devs/lgi/9949c47e6eacadfcb3cbac1c41517d78664783cf";
-      flake = false;
-    };
-
     somewm-stable.url = "github:trip-zip/somewm/release/1.4";
     somewm-dev.url = "github:trip-zip/somewm/main";
   };
@@ -44,7 +38,6 @@
         somewm-stable = import ./pkgs/somewm.nix {
           inherit pkgs;
           src = inputs.somewm-stable;
-          lgiSrc = inputs.lgi;
           version = "1.4";
           wlrootsVersion = "0.19";
         };
@@ -52,7 +45,6 @@
         somewm-dev = import ./pkgs/somewm.nix {
           inherit pkgs;
           src = inputs.somewm-dev;
-          lgiSrc = inputs.lgi;
           version = "2.0-dev";
           wlrootsVersion = "0.20";
         };
