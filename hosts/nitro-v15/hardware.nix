@@ -11,10 +11,9 @@
 
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
-  # Reuse the existing EFI System Partition. It is intentionally never formatted
-  # by our installer because it also contains the Windows boot manager.
+  # EFI boot partition from Disko
   fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/3372-27A9";
+    device = "/dev/disk/by-partlabel/ESP";
     fsType = "vfat";
     options = [ "umask=0077" ];
   };
