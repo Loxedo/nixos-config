@@ -1,8 +1,8 @@
 { config, pkgs, lib, inputs, ... }:
-
 {
   imports = [
     ./hardware.nix
+    ./disko.nix
     ../../modules/boot.nix
     ../../modules/graphics.nix
     ../../modules/wayland.nix
@@ -12,6 +12,7 @@
     ../../modules/swap.nix
     ../../modules/gaming.nix
     ../../modules/razer.nix
+    ../../modules/flatpak.nix
     ../../modules/optimization.nix
   ];
 
@@ -25,10 +26,10 @@
     isNormalUser = true;
     description = "Loxedo";
     extraGroups = [ "wheel" "networkmanager" "video" "render" "input" ];
-    shell = pkgs.zsh;
+    shell = pkgs.fish;
   };
 
-  programs.zsh.enable = true;
+  programs.fish.enable = true;
 
   security.sudo.wheelNeedsPassword = true;
 
@@ -36,8 +37,10 @@
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
       auto-optimise-store = true;
+      builders-use-substitutes = true;
       trusted-users = [ "root" "loxedo" ];
     };
+
     gc = {
       automatic = true;
       dates = "weekly";
@@ -45,6 +48,7 @@
     };
   };
 
+  programs.command-not-found.enable = false;
   documentation.nixos.enable = false;
 
   system.stateVersion = "26.05";

@@ -1,16 +1,27 @@
-{ pkgs, inputs, ... }:
+{ pkgs, inputs, lib, ... }:
 
+let
+  crystalWayland = pkgs.runCommand "crystal-aura-wayland" {} ''
+    cp -R ${inputs.crystal}/. $out
+    rm -f $out/rc.lua
+    cp ${./crystal/rc.lua} $out/rc.lua
+    rm -f $out/main/autorun.sh
+    mkdir -p $out/main
+    cp ${./crystal/autorun.sh} $out/main/autorun.sh
+    chmod +x $out/main/autorun.sh
+  '';
+in
 {
   home.username = "loxedo";
   home.homeDirectory = "/home/loxedo";
   home.stateVersion = "26.05";
 
   home.packages = with pkgs; [
-    kitty
+    alacritty
+    brave
+    fishPlugins.fzf
     rofi-wayland
-    waybar
     wlogout
-    swaylock
     playerctl
     brightnessctl
     pamixer
@@ -28,37 +39,41 @@
     mpd
     mpc
     ncmpcpp
-    neofetch
-    lm_sensors
     btop
     fastfetch
+    lm_sensors
     networkmanagerapplet
-    blueman
   ];
 
   programs.git.enable = true;
-  programs.zsh = {
+
+  programs.fish = {
     enable = true;
-    autosuggestion.enable = true;
-    syntaxHighlighting.enable = true;
-    history.size = 10000;
+    interactiveShellInit = ''
+      set -g fish_greeting
+      alias rebuild 'sudo nixos-rebuild switch --flake ~/nixos-config#nitro-v15'
+      alias update 'cd ~/nixos-config; nix flake update; sudo nixos-rebuild switch --flake .#nitro-v15'
+      alias nvidia-run 'nvidia-offload'
+      alias wifi-on 'nmcli radio wifi on'
+      alias wifi-off 'nmcli radio wifi off'
+      alias bt-on 'rfkill unblock bluetooth'
+    '';
   };
 
-  # Crystal Aura is tracked as a flake input. We materialize it as the
-  # Awesome-compatible configuration directory for SomeWM.
+  programs.alacritty = {
+    enable = true;
+    settings = {
+      window.opacity = 0.96;
+      font.normal.family = "JetBrainsMono Nerd Font";
+      font.size = 11;
+    };
+  };
+
   xdg.configFile."awesome" = {
-    source = inputs.crystal;
+    source = crystalWayland;
     recursive = true;
   };
 
-  # Wayland-specific overrides live outside upstream Crystal so upgrades are
-  # isolated and easy to review.
-  xdg.configFile."somewm/aura-override.lua".text = ''
-    -- Local Wayland adaptation placeholder.
-    -- Keep this separate from upstream Crystal Aura so upstream updates remain clean.
-  '';
-
-  # Per-user launcher helper for explicit NVIDIA offload.
   home.file.".local/bin/nvidia-run" = {
     executable = true;
     text = ''

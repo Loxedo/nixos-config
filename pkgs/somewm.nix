@@ -1,9 +1,7 @@
-{ pkgs, src }:
-
+{ pkgs, src, version, wlrootsVersion }:
 pkgs.stdenv.mkDerivation {
   pname = "somewm";
-  version = "1.4";
-  inherit src;
+  inherit version src;
 
   nativeBuildInputs = with pkgs; [
     meson
@@ -36,7 +34,7 @@ pkgs.stdenv.mkDerivation {
   mesonFlags = [
     "-Dbuildtype=release"
     "-Db_sanitize=none"
-    "-Dwlroots_version=0.19"
+    "-Dwlroots_version=${wlrootsVersion}"
     "-Dxwayland=enabled"
     "-Dpam=enabled"
   ];

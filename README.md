@@ -1,41 +1,61 @@
-# NixOS — Acer Nitro V15 / Crystal Aura / Wayland
+# Loxedo NixOS — Acer Nitro ANV15-51
 
-Personal, reproducible NixOS configuration for the Acer Nitro ANV15-51.
+Reproducible NixOS configuration for an Acer Nitro ANV15-51 with:
 
-## Hardware profile
+- Intel Core i7-13620H + Intel iGPU
+- NVIDIA GeForce RTX 4050 Laptop GPU
+- 16 GiB DDR5
+- WD SN740 1 TB NVMe
+- Intel eDP-1: 1920x1080 @ 165 Hz
+- NVIDIA HDMI-A-2: 1920x1080 @ 74.97 Hz
+- Btrfs + separate root/home/nix/swap subvolumes
+- Wayland + SomeWM + Crystal Aura
+- PipeWire + EasyEffects + xdg-desktop-portal-wlr
+- Steam / Proton / GameMode / Gamescope
+- Razer OpenRazer / Polychromatic
+- Fish + Alacritty + Brave
+- Declarative Flatpak + GoofCord
 
-- Acer Nitro ANV15-51, firmware V1.52
-- Intel Core i7-13620H
-- Intel UHD Graphics, PCI `0000:00:02.0`
-- NVIDIA GeForce RTX 4050 Laptop, PCI `0000:01:00.0`
-- 16 GiB DDR5, 2×8 GiB
-- WD PC SN740 1 TB NVMe
-- Internal BOE 1920×1080 @ 165 Hz (`eDP-1`)
-- External Samsung LF22T35 1920×1080 @ 74.97 Hz (`HDMI-A-2`)
-- Razer BlackWidow V4 X `1532:0293`
-- Razer BlackShark V2 HS USB `1532:056e`
-- Attack Shark wireless mouse receiver `1d57:fa60`
+## Storage safety
 
-## Design
+The machine dual-boots Windows. The Windows NTFS partition and MSR partition are
+intentionally preserved. Disko targets **only `/dev/nvme0n1p2`**, the Linux Btrfs
+partition, while the existing EFI System Partition is reused without formatting.
 
-- NixOS + flakes
-- Home Manager as a NixOS module
-- Wayland compositor: SomeWM
-- Desktop configuration: Crystal Aura, consumed from its upstream Git reference
-- NVIDIA open kernel modules + PRIME offload
-- PipeWire/WirePlumber
-- zram-first memory pressure handling
-- Steam/GameMode/MangoHud
+The installer refuses to continue unless the expected PARTUUID/EFI UUID/Windows
+filesystem checks succeed and the user types the exact confirmation string.
 
-## Important GPU topology
+## Development workflow
 
-The internal eDP panel is attached to the Intel GPU while the external HDMI connector is attached to the RTX 4050. This is not a simple all-displays-on-iGPU Optimus layout and must be validated with the Wayland compositor before the destructive install stage.
+```bash
+nix flake check
+sudo nixos-rebuild build --flake .#nitro-v15
+```
 
-## Upstream sources
+For a clean installation from a NixOS live USB:
 
-- Crystal Aura: https://github.com/namishh/crystal/tree/aura
-- SomeWM: https://github.com/trip-zip/somewm
+```bash
+git clone https://github.com/Loxedo/nixos-config.git
+cd nixos-config
+./scripts/install.sh
+```
 
-## Status
+Do not run the installer until the hardware/Wayland validation has been completed.
 
-This is the initial reproducible scaffold. The installer intentionally does **not** format disks yet. The next hardening pass should validate SomeWM + NVIDIA multi-GPU presentation, complete the Crystal Aura Wayland adaptations, finalize the fresh Btrfs partition scheme, and then enable the destructive installation stage.
+## GPU policy
+
+- Intel handles the normal desktop workload.
+- NVIDIA is available through PRIME render offload.
+- The external HDMI display is physically wired to NVIDIA, so the RTX remains awake
+  whenever that display is active.
+- Explicit dGPU execution is available through `nvidia-offload` / `nvidia-run`.
+
+## Memory policy
+
+- zram: up to 75% of physical RAM, high priority
+- NVMe swapfile: 32 GiB, low priority
+- `vm.swappiness=150`
+- `systemd-oomd` enabled
+
+This is intentionally aggressive for heavy multitasking, but interactive applications
+are not forced entirely into swap.

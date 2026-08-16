@@ -3,35 +3,53 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Crystal Aura is consumed as an input rather than copied into this repo.
-    # This keeps provenance clear and avoids duplicating upstream source.
+    disko = {
+      url = "github:nix-community/disko/latest";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    nix-flatpak.url = "github:gmodena/nix-flatpak";
+
     crystal.url = "github:namishh/crystal/aura";
 
-    # SomeWM stable 1.4 branch is the Wayland/ Awesome-compatible target.
-    # The package is maintained locally under pkgs/somewm.nix because it is not
-    # assumed to exist in the selected nixpkgs channel.
-    somewm.url = "github:trip-zip/somewm/release/1.4";
+    somewm-stable.url = "github:trip-zip/somewm/release/1.4";
+    somewm-dev.url = "github:trip-zip/somewm/main";
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, ... }:
+  outputs = inputs@{ self, nixpkgs, home-manager, disko, nix-flatpak, ... }:
     let
       system = "x86_64-linux";
-      lib = nixpkgs.lib;
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
     in {
-      packages.${system}.somewm = import ./pkgs/somewm.nix {
-        pkgs = import nixpkgs { inherit system; };
-        src = inputs.somewm;
+      packages.${system}.somewm-stable = import ./pkgs/somewm.nix {
+        inherit pkgs;
+        src = inputs.somewm-stable;
+        version = "1.4";
+        wlrootsVersion = "0.19";
       };
 
-      nixosConfigurations.nitro-v15 = lib.nixosSystem {
+      packages.${system}.somewm-dev = import ./pkgs/somewm.nix {
+        inherit pkgs;
+        src = inputs.somewm-dev;
+        version = "2.0-dev";
+        wlrootsVersion = "0.20";
+      };
+
+      nixosConfigurations.nitro-v15 = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs; };
         modules = [
+          disko.nixosModules.disko
+          nix-flatpak.nixosModules.nix-flatpak
           ./hosts/nitro-v15
           home-manager.nixosModules.home-manager
           {
@@ -42,5 +60,10 @@
           }
         ];
       };
+
+      # The disk configuration intentionally targets only the existing Linux
+      # partition (p2) so the Windows NTFS partition, MSR and EFI system
+      # partition are never part of a destructive Disko operation.
+      diskoConfigurations.nitro-v15 = ./hosts/nitro-v15/disko.nix;
     };
 }

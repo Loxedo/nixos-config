@@ -1,15 +1,17 @@
 { ... }:
 {
   systemd.oomd.enable = true;
-
   services.fwupd.enable = true;
 
+  # Hardware/service policy for this machine.
   services.printing.enable = false;
   services.avahi.enable = false;
   services.modemmanager.enable = false;
 
-  boot.kernel.sysctl = {
-    "vm.swappiness" = 100;
-    "vm.vfs_cache_pressure" = 50;
+  # Bluetooth remains installed for emergency/occasional use, but is never
+  # powered on automatically.
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = false;
   };
 }
