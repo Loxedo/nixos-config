@@ -20,7 +20,7 @@ in
     alacritty
     brave
     fishPlugins.fzf
-    rofi-wayland
+    rofi
     wlogout
     playerctl
     brightnessctl
