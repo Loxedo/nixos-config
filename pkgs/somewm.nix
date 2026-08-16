@@ -37,7 +37,7 @@ pkgs.stdenv.mkDerivation {
     seatd
     libxcb-wm
     wlroots_0_19
-    xcb-util-wm
+    xcbutilwm
     xcbutil
   ] ++ [ lgi ];
 
