@@ -24,7 +24,7 @@ pkgs.stdenv.mkDerivation {
     gdk-pixbuf
     pam
     lua5_1
-    lgi
+    lua51Packages.lgi
     pixman
     libdisplay-info
     udev
