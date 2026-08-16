@@ -26,7 +26,9 @@ pkgs.stdenv.mkDerivation {
   '';
 
   installPhase = ''
-    make -C lgi install ${pkgs.lib.concatStringsSep " " makeFlags}
+    make -C lgi install PREFIX=$out LUA_VERSION=5.1 \
+      LUA_CFLAGS="-I${pkgs.lua5_1}/include" \
+      LUA_LIB="-L${pkgs.lua5_1}/lib -llua"
   '';
 
   dontConfigure = true;
