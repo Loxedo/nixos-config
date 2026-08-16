@@ -16,7 +16,12 @@
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
-    crystal.url = "github:namishh/crystal/aura";
+    # Crystal Aura is a source repository, not a Nix flake.
+    # Keep it as a non-flake input so Home Manager can consume its files directly.
+    crystal = {
+      url = "github:namishh/crystal/aura";
+      flake = false;
+    };
 
     somewm-stable.url = "github:trip-zip/somewm/release/1.4";
     somewm-dev.url = "github:trip-zip/somewm/main";
