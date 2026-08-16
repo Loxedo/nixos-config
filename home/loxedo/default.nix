@@ -3,12 +3,13 @@
 let
   crystalWayland = pkgs.runCommand "crystal-aura-wayland" {} ''
     cp -R ${inputs.crystal}/. $out
-    rm -f $out/rc.lua
-    cp ${./crystal/rc.lua} $out/rc.lua
-    rm -f $out/main/autorun.sh
-    mkdir -p $out/main
-    cp ${./crystal/autorun.sh} $out/main/autorun.sh
-    chmod +x $out/main/autorun.sh
+    chmod -R u+w "$out"
+    rm -f "$out/rc.lua"
+    cp ${./crystal/rc.lua} "$out/rc.lua"
+    rm -f "$out/main/autorun.sh"
+    mkdir -p "$out/main"
+    cp ${./crystal/autorun.sh} "$out/main/autorun.sh"
+    chmod +x "$out/main/autorun.sh"
   '';
   somewm = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.somewm-stable;
 in
