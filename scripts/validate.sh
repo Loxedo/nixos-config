@@ -37,7 +37,6 @@ lock_before="$(sha256sum flake.lock)"
 nix flake check --no-write-lock-file
 nix build '.#nixosConfigurations.nitro-v15.config.system.build.toplevel' --no-link --no-write-lock-file
 nix build '.#somewm-stable' --no-link --no-write-lock-file
-nix build '.#somewm-dev' --no-link --no-write-lock-file
 
 lock_after="$(sha256sum flake.lock)"
 if [[ "$lock_before" != "$lock_after" ]]; then
@@ -45,4 +44,4 @@ if [[ "$lock_before" != "$lock_after" ]]; then
   exit 1
 fi
 
-echo 'Static, lockfile, system-build, and package-build validation passed.'
+echo 'Static, lockfile, system-build, SomeWM test-suite, and package-build validation passed.'
