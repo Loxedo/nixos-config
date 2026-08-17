@@ -16,6 +16,19 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-26.05
 
+      - name: Validate shell and Crystal Lua syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n install.sh
+          bash -n scripts/hardware-check.sh
+          bash -n home/loxedo/crystal/autorun.sh
+          nix shell nixpkgs#lua5_3 --command bash -c '
+            while IFS= read -r -d "" file; do
+              lua -e '\''assert(loadfile(arg[1]))'\'' "$file"
+            done < <(find home/loxedo/crystal -type f -name "*.lua" -print0)
+          '
+
       - name: Evaluate and build configuration
         shell: bash
         run: |
