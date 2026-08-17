@@ -14,14 +14,6 @@ let
     cache_dir="$cache_home/awesome"
     mkdir -p "$cache_dir/json" "$cache_dir/lock" "$HOME/Pictures/Screenshots"
 
-    if command -v systemctl >/dev/null 2>&1; then
-      systemctl --user import-environment \
-        WAYLAND_DISPLAY \
-        XDG_CURRENT_DESKTOP \
-        XDG_SESSION_DESKTOP \
-        XDG_SESSION_TYPE 2>/dev/null || true
-    fi
-
     exec ${pkgs.dbus}/bin/dbus-run-session -- ${somewm}/bin/somewm
   '';
 in
