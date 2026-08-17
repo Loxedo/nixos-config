@@ -22,7 +22,6 @@
     };
 
     somewm-stable.url = "github:trip-zip/somewm/release/1.4";
-    somewm-dev.url = "github:trip-zip/somewm/main";
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, disko, nix-flatpak, ... }:
@@ -40,18 +39,10 @@
           version = "1.4.3";
           wlrootsVersion = "0.19";
         };
-
-        somewm-dev = import ./pkgs/somewm.nix {
-          inherit pkgs;
-          src = inputs.somewm-dev;
-          version = "2.0-dev";
-          wlrootsVersion = "0.20";
-        };
       };
 
       overlays.default = final: prev: {
         somewm-stable = self.packages.${system}.somewm-stable;
-        somewm-dev = self.packages.${system}.somewm-dev;
       };
 
       nixosConfigurations.nitro-v15 = nixpkgs.lib.nixosSystem {
