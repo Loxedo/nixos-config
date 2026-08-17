@@ -42,6 +42,11 @@ pkgs.stdenv.mkDerivation {
     systemd
   ];
 
+  preConfigure = ''
+    export PKG_CONFIG_SYSTEMD_SYSTEMDUSERUNITDIR="$out/lib/systemd/user"
+    export PKG_CONFIG_SYSTEMD_SYSTEMDSYSTEMUNITDIR="$out/lib/systemd/system"
+  '';
+
   LUA_PATH = "${lgi}/share/lua/5.3/?.lua;${lgi}/share/lua/5.3/?/init.lua;;";
   LUA_CPATH = "${lgi}/lib/lua/5.3/?.so;${lgi}/lib/lua/5.3/lgi/?.so;;";
 
@@ -53,7 +58,6 @@ pkgs.stdenv.mkDerivation {
     "-Dxwayland=enabled"
     "-Dpam=enabled"
     "-Dlua_pkg=lua5.3"
-    "-Dsystemduserunitdir=${placeholder "out"}/lib/systemd/user"
   ];
 
   doCheck = false;
