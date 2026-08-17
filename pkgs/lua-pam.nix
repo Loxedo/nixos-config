@@ -15,7 +15,7 @@ pkgs.stdenv.mkDerivation {
       -I${pkgs.lua5_3}/include \
       -I${pkgs.pam}/include \
       main.cpp \
-      -L${pkgs.lua5_3}/lib -llua5.3 \
+      -L${pkgs.lua5_3}/lib -llua \
       -L${pkgs.pam}/lib -lpam \
       -o liblua_pam.so
     runHook postBuild
