@@ -1,10 +1,31 @@
 { pkgs, inputs, ... }:
 let
   somewm = inputs.self.packages.${pkgs.system}.somewm-stable;
+
+  somewmSession = pkgs.writeShellScriptBin "somewm-session" ''
+    set -eu
+
+    export XDG_SESSION_TYPE="wayland"
+    export XDG_CURRENT_DESKTOP="SomeWM"
+    export XDG_SESSION_DESKTOP="SomeWM"
+
+    cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/awesome"
+    mkdir -p "$cache_dir/json" "$cache_dir/lock" "$HOME/Pictures/Screenshots"
+
+    if command -v systemctl >/dev/null 2>&1; then
+      systemctl --user import-environment \
+        WAYLAND_DISPLAY \
+        XDG_CURRENT_DESKTOP \
+        XDG_SESSION_DESKTOP \
+        XDG_SESSION_TYPE 2>/dev/null || true
+    fi
+
+    exec ${pkgs.dbus}/bin/dbus-run-session -- ${somewm}/bin/somewm
+  '';
 in
 {
   environment.systemPackages = with pkgs; [
-    somewm
+    somewmSession
     wl-clipboard
     wayland-utils
     wtype
@@ -32,7 +53,7 @@ in
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd ${somewm}/bin/somewm";
+        command = "${somewmSession}/bin/somewm-session";
         user = "greeter";
       };
     };
