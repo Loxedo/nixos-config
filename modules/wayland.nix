@@ -9,7 +9,10 @@ let
     export XDG_CURRENT_DESKTOP="SomeWM"
     export XDG_SESSION_DESKTOP="SomeWM"
 
-    cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/awesome"
+    # Nix interprets ${...} inside indented strings, so use a literal shell
+    # fallback expression here rather than a Nix interpolation.
+    cache_home="''${XDG_CACHE_HOME:-$HOME/.cache}"
+    cache_dir="$cache_home/awesome"
     mkdir -p "$cache_dir/json" "$cache_dir/lock" "$HOME/Pictures/Screenshots"
 
     if command -v systemctl >/dev/null 2>&1; then
@@ -53,7 +56,7 @@ in
     enable = true;
     settings = {
       default_session = {
-        command = "${somewmSession}/bin/somewm-session";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd ${somewmSession}/bin/somewm-session";
         user = "greeter";
       };
     };
