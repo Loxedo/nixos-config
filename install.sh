@@ -22,7 +22,7 @@ fi
 # installer and every Nix command it launches without modifying the target.
 export NIX_CONFIG='experimental-features = nix-command flakes'
 
-for cmd in nix lsblk nixos-install nixos-generate-config mountpoint; do
+for cmd in nix lsblk nixos-install nixos-generate-config mountpoint sha256sum; do
   command -v "$cmd" >/dev/null || {
     echo "Missing required command: $cmd" >&2
     exit 1
@@ -34,15 +34,29 @@ if ! nix --version >/dev/null 2>&1; then
   exit 1
 fi
 
+# Validation is not allowed to mutate the lockfile. If a flake input needs to
+# change, that is an explicit repository maintenance action, not an installer
+# side effect. This also makes the preflight and the installed system use the
+# exact committed dependency graph.
+lock_before="$(sha256sum flake.lock)"
+
 # Run a complete preflight build before touching the disk. This is deliberate:
 # a failure in SomeWM/LGI/wlroots or any other system package must stop the
 # installer BEFORE the existing filesystem is destroyed.
 echo
 echo 'Running preflight build of the complete NixOS configuration...'
-if ! nix build "$repo_root#nixosConfigurations.nitro-v15.config.system.build.toplevel" --no-link; then
+if ! nix build "$repo_root#nixosConfigurations.nitro-v15.config.system.build.toplevel" \
+  --no-link \
+  --no-write-lock-file; then
   echo
   echo 'Preflight build failed. The disk has NOT been modified.' >&2
   echo 'Fix the reported build error and run ./install.sh again.' >&2
+  exit 1
+fi
+
+lock_after="$(sha256sum flake.lock)"
+if [[ "$lock_before" != "$lock_after" ]]; then
+  echo 'ERROR: preflight modified flake.lock; refusing to continue.' >&2
   exit 1
 fi
 
@@ -93,13 +107,14 @@ sudo umount -R /mnt 2>/dev/null || true
 
 # Use the exact Disko revision pinned by this repository's flake.lock instead
 # of silently switching to a different release at install time.
-disko_rev="$(nix eval --raw --expr 'let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in lock.nodes.disko.locked.rev')"
+disko_rev="$(nix eval --raw --no-write-lock-file --expr 'let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in lock.nodes.disko.locked.rev')"
 disko_ref="github:nix-community/disko/${disko_rev}"
 
 echo
 echo "Using pinned Disko revision: $disko_rev"
 echo 'Partitioning and formatting with Disko...'
 sudo env NIX_CONFIG="$NIX_CONFIG" nix run \
+  --no-write-lock-file \
   "$disko_ref" -- \
   --mode destroy,format,mount \
   --yes-wipe-all-disks \
