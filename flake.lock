@@ -90,22 +90,6 @@
         "type": "github"
       }
     },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1784007870,
-        "narHash": "sha256-djcLt/JJphyNt4eDY9XTly+/WbCK5lqWq9lSgCmJkkQ=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "18b9261cb3294b6d2a06d03f96872827b8fe2698",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs_3": {
       "locked": {
         "lastModified": 1784007870,
@@ -129,27 +113,7 @@
         "home-manager": "home-manager",
         "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs",
-        "somewm-dev": "somewm-dev",
         "somewm-stable": "somewm-stable"
-      }
-    },
-    "somewm-dev": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_2"
-      },
-      "locked": {
-        "lastModified": 1786721002,
-        "narHash": "sha256-YbeHSXAA6s5yykDBG6CytgkVevh5HhAIdHGczGe+cNQ=",
-        "owner": "trip-zip",
-        "repo": "somewm",
-        "rev": "96989c7431138cdbb35fae1b6ee1d00a34b7bbe8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "trip-zip",
-        "ref": "main",
-        "repo": "somewm",
-        "type": "github"
       }
     },
     "somewm-stable": {
