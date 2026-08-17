@@ -10,13 +10,12 @@
     };
 
     disko = {
-      url = "github:nix-community/disko/latest";
+      url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
-    # Crystal Aura is a source repository, not a Nix flake.
     crystal = {
       url = "github:namishh/crystal/aura";
       flake = false;
@@ -50,6 +49,11 @@
         };
       };
 
+      overlays.default = final: prev: {
+        somewm-stable = self.packages.${system}.somewm-stable;
+        somewm-dev = self.packages.${system}.somewm-dev;
+      };
+
       nixosConfigurations.nitro-v15 = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs; };
@@ -59,6 +63,7 @@
           ./hosts/nitro-v15
           home-manager.nixosModules.home-manager
           {
+            nixpkgs.overlays = [ self.overlays.default ];
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit inputs; };
