@@ -47,6 +47,9 @@ in
     fastfetch
     lm_sensors
     networkmanagerapplet
+    grim
+    slurp
+    wl-clipboard
   ];
 
   programs.git.enable = true;
