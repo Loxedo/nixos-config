@@ -9,8 +9,7 @@ let
     export XDG_CURRENT_DESKTOP="SomeWM"
     export XDG_SESSION_DESKTOP="SomeWM"
 
-    # Nix interprets ${...} inside indented strings, so use a literal shell
-    # fallback expression here rather than a Nix interpolation.
+    # Escape the shell parameter expansion so Nix leaves it for the script.
     cache_home="''${XDG_CACHE_HOME:-$HOME/.cache}"
     cache_dir="$cache_home/awesome"
     mkdir -p "$cache_dir/json" "$cache_dir/lock" "$HOME/Pictures/Screenshots"
