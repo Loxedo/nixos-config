@@ -5,16 +5,16 @@ local beautiful = require("beautiful")
 local dpi       = beautiful.xresources.apply_dpi
 local gears     = require("gears")
 
--- liblua_pam is a separately-compiled .so (github.com/rmtt/lua-pam), not a
--- Nix package. If it isn't present in ~/.config/awesome, don't let a hard
--- require() error kill rc.lua on startup — fall back gracefully instead.
+-- The PAM module is packaged by Nix and copied next to the Crystal config.
+-- Add the config directory to Lua's C module search path before requiring it.
+package.cpath = package.cpath .. ";" .. gears.filesystem.get_configuration_dir() .. "?.so"
+
 local pam_ok, pam = pcall(require, "liblua_pam")
 local auth = function(password)
   if pam_ok then
     return pam.auth_current_user(password)
   end
-  -- No PAM binding available: lock screen can't authenticate. Log once and
-  -- refuse all input rather than silently accepting anything.
+  -- Never fail open if the PAM module is unavailable.
   return false
 end
 
@@ -54,22 +54,6 @@ local label     = wibox.widget {
   widget = wibox.widget.textbox,
 }
 
-
-
-local check_caps = function()
-  awful.spawn.easy_async_with_shell(
-    'xset q | grep Caps | cut -d: -f3 | cut -d0 -f1 | tr -d \' \'',
-    function(stdout)
-      if stdout:match('off') then
-        label.markup = "Type The Password Here"
-      else
-        label.markup = "HINT: Caps Lock Is ON"
-      end
-    end
-  )
-end
-
-
 local promptbox = wibox {
   width = dpi(900),
   height = dpi(800),
@@ -86,8 +70,6 @@ local background = wibox({
   ontop = true,
   type = "splash"
 })
-
-
 
 awful.placement.centered(background)
 
@@ -127,16 +109,11 @@ local function grab()
         input = ""
         return
       end
-      -- Accept only the single charactered key
-      -- Ignore 'Shift', 'Control', 'Return', 'F1', 'F2', etc., etc.
+      -- Accept only single-character keys; ignore modifiers and function keys.
       if #key == 1 then
         header:get_children_by_id('arc')[1].colors = { beautiful.blue }
         header:get_children_by_id('arc')[1].value = 20
         header:get_children_by_id('arc')[1].start_angle = getRandom()
-        if input == nil then
-          input = key
-          return
-        end
         input = input .. key
       elseif key == "BackSpace" then
         header:get_children_by_id('arc')[1].colors = { beautiful.blue }
@@ -150,7 +127,6 @@ local function grab()
       end
     end,
     keyreleased_callback = function(self, _, key, _)
-      -- Validation
       if key == 'Return' then
         if auth(input) then
           self:stop()
@@ -163,14 +139,11 @@ local function grab()
           grab()
           input = ""
         end
-      elseif key == 'Caps_Lock' then
-        check_caps()
       end
     end
   }
   grabber:start()
 end
-
 
 awesome.connect_signal("toggle::lock", function()
   visible(true)
@@ -209,7 +182,6 @@ background:setup {
   overlay,
   layout = wibox.layout.stack
 }
-
 
 promptbox:setup {
   {
@@ -251,8 +223,4 @@ promptbox:setup {
   widget = wibox.container.background,
   shape = helpers.rrect(20)
 }
-awful.placement.centered(
-  promptbox
-)
-
-check_caps()
+awful.placement.centered(promptbox)
