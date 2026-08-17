@@ -1,8 +1,8 @@
 { pkgs, src, version, wlrootsVersion }:
 
 let
-  lgi = pkgs.lua51Packages.lgi;
-  lua = pkgs.lua5_1;
+  lua = pkgs.lua5_4;
+  lgi = pkgs.lua54Packages.lgi;
   wlroots = pkgs."wlroots_${builtins.replaceStrings [ "." ] [ "_" ] wlrootsVersion}";
 in
 pkgs.stdenv.mkDerivation {
@@ -41,16 +41,10 @@ pkgs.stdenv.mkDerivation {
     wlroots
   ];
 
-  # SomeWM's release/1.4 branch performs a real C-based LGI probe during
-  # Meson configuration. Keep Lua and LGI on the exact same Lua 5.1 package
-  # set and expose both the Lua module tree and LGI's native module tree.
-  LUA_PATH = "${lgi}/share/lua/5.1/?.lua;${lgi}/share/lua/5.1/?/init.lua;;";
-  LUA_CPATH = "${lgi}/lib/lua/5.1/?.so;${lgi}/lib/lua/5.1/lgi/?.so;;";
-
-  # Do not override PKG_CONFIG_PATH here. Nix's build environment already adds
-  # every build input's pkgconfig directory; replacing it makes Meson unable to
-  # discover wlroots, Wayland, Cairo, GLib, etc., which presents as misleading
-  # "wlroots not found" errors even when the package is in buildInputs.
+  # Somewm requiere Lua 5.2+ para constantes de C como LUA_OK. 
+  # Se actualiza el entorno a Lua 5.4 y se exportan las rutas del modulo LGI 5.4.
+  LUA_PATH = "${lgi}/share/lua/5.4/?.lua;${lgi}/share/lua/5.4/?/init.lua;;";
+  LUA_CPATH = "${lgi}/lib/lua/5.4/?.so;${lgi}/lib/lua/5.4/lgi/?.so;;";
 
   mesonBuildType = "release";
 
@@ -59,7 +53,7 @@ pkgs.stdenv.mkDerivation {
     "-Dwlroots_version=${wlrootsVersion}"
     "-Dxwayland=enabled"
     "-Dpam=enabled"
-    "-Dlua_pkg=lua5.1"
+    "-Dlua_pkg=lua5.4"
   ];
 
   doCheck = false;
