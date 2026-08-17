@@ -25,26 +25,27 @@
   boot.kernel.sysctl = {
     # Aggressive swap to prevent OOM kills
     "vm.swappiness" = 180;
-    
+
     # Cluster memory writes to reduce I/O overhead
     "vm.page-cluster" = 3;
-    
+
     # Reduce cache pressure (keep caches longer)
     "vm.vfs_cache_pressure" = 50;
-    
+
     # Reduce writeback latency for smoother I/O
     "vm.dirty_ratio" = 5;
     "vm.dirty_background_ratio" = 2;
-    
+
     # Improve memory compaction (useful for gaming)
     "vm.extfrag_threshold" = 500;
     "vm.compact_unevictable_allowed" = 1;
   };
 
-  # Enable systemd-oomd for better OOM handling
+  # Protect the desktop's user slices as well as system/root workloads.
   systemd.oomd = {
     enable = true;
     enableSystemSlice = true;
     enableRootSlice = true;
+    enableUserSlices = true;
   };
 }

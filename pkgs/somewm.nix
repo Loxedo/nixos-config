@@ -40,6 +40,7 @@ pkgs.stdenv.mkDerivation {
     lgi
     wlroots
     systemd
+    xwayland
   ];
 
   preConfigure = ''

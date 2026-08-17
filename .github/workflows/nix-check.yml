@@ -17,6 +17,17 @@ jobs:
           nix_path: nixpkgs=channel:nixos-26.05
 
       - name: Evaluate and build configuration
+        shell: bash
         run: |
-          nix flake check
-          nix build .#nixosConfigurations.nitro-v15.config.system.build.toplevel --no-link
+          set -euo pipefail
+          before="$(sha256sum flake.lock)"
+
+          nix flake check --no-write-lock-file
+          nix build .#nixosConfigurations.nitro-v15.config.system.build.toplevel \
+            --no-link \
+            --no-write-lock-file
+          nix build .#somewm-stable --no-link --no-write-lock-file
+          nix build .#somewm-dev --no-link --no-write-lock-file
+
+          after="$(sha256sum flake.lock)"
+          test "$before" = "$after"

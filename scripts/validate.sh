@@ -6,6 +6,7 @@ cd "$repo_root"
 
 command -v nix >/dev/null || { echo 'nix is required'; exit 1; }
 command -v bash >/dev/null || { echo 'bash is required'; exit 1; }
+command -v sha256sum >/dev/null || { echo 'sha256sum is required'; exit 1; }
 
 export NIX_CONFIG='experimental-features = nix-command flakes'
 
@@ -30,8 +31,18 @@ if grep -n '^[[:space:]]*PKG_CONFIG_PATH[[:space:]]*=' pkgs/somewm.nix; then
   exit 1
 fi
 
-# Exercise the exact system build that the installer preflights. This catches
-# SomeWM/LGI/wlroots failures before the disk-destructive phase.
-nix build '.#nixosConfigurations.nitro-v15.config.system.build.toplevel' --no-link
+# Lockfile changes are intentional maintainer actions, never side effects of validation.
+lock_before="$(sha256sum flake.lock)"
 
-echo 'Static and system-build validation passed.'
+nix flake check --no-write-lock-file
+nix build '.#nixosConfigurations.nitro-v15.config.system.build.toplevel' --no-link --no-write-lock-file
+nix build '.#somewm-stable' --no-link --no-write-lock-file
+nix build '.#somewm-dev' --no-link --no-write-lock-file
+
+lock_after="$(sha256sum flake.lock)"
+if [[ "$lock_before" != "$lock_after" ]]; then
+  echo 'ERROR: validation modified flake.lock.' >&2
+  exit 1
+fi
+
+echo 'Static, lockfile, system-build, and package-build validation passed.'

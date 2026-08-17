@@ -1,19 +1,31 @@
 { pkgs, inputs, lib, ... }:
 
 let
+  luaPam = import ../../pkgs/lua-pam.nix { inherit pkgs; };
+
   crystalWayland = pkgs.runCommand "crystal-aura-wayland" {} ''
-  cp -R ${inputs.crystal}/. $out
-  chmod -R u+w "$out"
-  rm -f "$out/rc.lua"
-  cp ${./crystal/rc.lua} "$out/rc.lua"
-  rm -f "$out/main/autorun.sh"
-  mkdir -p "$out/main"
-  cp ${./crystal/autorun.sh} "$out/main/autorun.sh"
-  chmod +x "$out/main/autorun.sh"
-  cp ${./crystal/scrotter.lua} "$out/ui/popups/scrotter.lua"
-  mkdir -p "$out/ui/lock"
-  cp ${./crystal/lock-init.lua} "$out/ui/lock/init.lua"
-'';
+    cp -R ${inputs.crystal}/. $out
+    chmod -R u+w "$out"
+
+    rm -f "$out/rc.lua"
+    cp ${./crystal/rc.lua} "$out/rc.lua"
+
+    rm -f "$out/main/autorun.sh"
+    mkdir -p "$out/main"
+    cp ${./crystal/autorun.sh} "$out/main/autorun.sh"
+    chmod +x "$out/main/autorun.sh"
+
+    cp ${./crystal/scrotter.lua} "$out/ui/popups/scrotter.lua"
+
+    mkdir -p "$out/ui/lock"
+    cp ${./crystal/lock-init.lua} "$out/ui/lock/init.lua"
+
+    # The upstream tree contains a prebuilt PAM module. Do not depend on that
+    # binary: build the module with the exact Lua/PAM libraries from nixpkgs.
+    rm -f "$out/liblua_pam.so"
+    cp ${luaPam}/lib/lua/5.3/liblua_pam.so "$out/liblua_pam.so"
+  '';
+
   somewm = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.somewm-stable;
 in
 {
@@ -81,6 +93,10 @@ in
     source = crystalWayland;
     recursive = true;
   };
+
+  home.activation.createScreenshotDirectory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    run mkdir -p "$HOME/Pictures/Screenshots"
+  '';
 
   home.file.".local/bin/nvidia-run" = {
     executable = true;
