@@ -39,6 +39,7 @@ pkgs.stdenv.mkDerivation {
     xcbutil
     lgi
     wlroots
+    systemd
   ];
 
   LUA_PATH = "${lgi}/share/lua/5.3/?.lua;${lgi}/share/lua/5.3/?/init.lua;;";
@@ -52,6 +53,7 @@ pkgs.stdenv.mkDerivation {
     "-Dxwayland=enabled"
     "-Dpam=enabled"
     "-Dlua_pkg=lua5.3"
+    "-Dsystemduserunitdir=${placeholder "out"}/lib/systemd/user"
   ];
 
   doCheck = false;
