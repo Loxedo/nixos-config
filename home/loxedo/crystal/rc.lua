@@ -1,11 +1,14 @@
 -- Crystal Aura Wayland entrypoint for SomeWM.
 --
 -- SomeWM implements the AwesomeWM Lua API, so Aura's Lua modules can remain
--- upstream. This entrypoint removes the old X11 autorun dependency and lets
--- Nix/Home Manager provide the required Wayland-native helper programs.
+-- upstream. Keep the upstream autorun hook, but use the repository's
+-- Wayland-safe replacement instead of Crystal's original X11 script.
 
+local awful = require "awful"
 local gears = require "gears"
 local beautiful = require "beautiful"
+
+awful.spawn.with_shell("bash ~/.config/awesome/main/autorun.sh")
 
 require "setup":generate()
 beautiful.init(gears.filesystem.get_configuration_dir() .. "theme/init.lua")
