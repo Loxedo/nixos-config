@@ -61,7 +61,15 @@ pkgs.stdenv.mkDerivation {
     "-Dlua_pkg=lua5.3"
   ];
 
-  doCheck = false;
+  doCheck = true;
+  checkPhase = ''
+    runHook preCheck
+
+    ./tests/test-check-mode.sh "$out/bin/somewm"
+    LIBSEAT_BACKEND=noop ./tests/test-signal-term.sh "$out/bin/somewm"
+
+    runHook postCheck
+  '';
 
   meta = with pkgs.lib; {
     description = "Lua-scriptable Wayland compositor compatible with AwesomeWM";
