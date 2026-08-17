@@ -26,6 +26,8 @@ jobs:
           nix build .#nixosConfigurations.nitro-v15.config.system.build.toplevel \
             --no-link \
             --no-write-lock-file
+          nix build .#somewm-stable --no-link --no-write-lock-file
+          nix build .#somewm-dev --no-link --no-write-lock-file
 
           after="$(sha256sum flake.lock)"
           test "$before" = "$after"
