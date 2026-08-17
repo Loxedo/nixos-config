@@ -85,10 +85,7 @@ static int auth_current_user(lua_State *L) {
         return 1;
     }
 
-    conversation_data data = {
-        .username = pw->pw_name,
-        .password = pass,
-    };
+    conversation_data data = { pw->pw_name, pass };
 
     pam_handle_t *pamh = nullptr;
     struct pam_conv conv = { pam_conversation, &data };
