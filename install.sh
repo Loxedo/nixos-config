@@ -16,13 +16,22 @@ if [[ $EUID -eq 0 ]]; then
   exit 1
 fi
 
+# This configuration installs systemd-boot to an EFI System Partition, so the
+# official installation workflow requires the live environment to be booted
+# in UEFI mode. Do not allow a BIOS boot to reach the destructive Disko step.
+if [[ ! -d /sys/firmware/efi ]]; then
+  echo "The NixOS live environment is not booted in UEFI mode." >&2
+  echo "Reboot the installer USB using its UEFI boot entry and run ./install.sh again." >&2
+  exit 1
+fi
+
 # The installed NixOS system enables flakes declaratively, but that setting
 # cannot affect the NixOS live ISO before the target system exists. Nix reads
 # NIX_CONFIG for the current process tree, so this enables flakes for the live
 # installer and every Nix command it launches without modifying the target.
 export NIX_CONFIG='experimental-features = nix-command flakes'
 
-for cmd in nix lsblk nixos-install nixos-generate-config mountpoint sha256sum; do
+for cmd in nix lsblk nixos-install nixos-generate-config mountpoint sha256sum sudo; do
   command -v "$cmd" >/dev/null || {
     echo "Missing required command: $cmd" >&2
     exit 1
@@ -131,8 +140,9 @@ sudo mkdir -p /mnt/etc/nixos
 sudo nixos-generate-config --root /mnt --no-filesystems
 
 # Keep the generated files for reference, but make the repository flake the
-# authoritative system configuration.
+# authoritative system configuration. Git metadata is not needed on the target.
 sudo cp -a "$repo_root/." /mnt/etc/nixos/
+sudo rm -rf /mnt/etc/nixos/.git
 
 if [[ ! -f /mnt/etc/nixos/flake.nix ]]; then
   echo 'Flake was not copied into /mnt/etc/nixos.' >&2
