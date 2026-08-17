@@ -42,7 +42,8 @@
               };
               "@swap" = {
                 mountpoint = "/swap";
-                mountOptions = [ "noatime" ];
+                # Btrfs swapfiles must not be copy-on-write or compressed.
+                mountOptions = [ "noatime" "nodatacow" ];
               };
               "@cache" = {
                 mountpoint = "/var/cache";
