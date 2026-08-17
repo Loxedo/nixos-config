@@ -45,10 +45,12 @@ in
       pkgs.xdg-desktop-portal-wlr
       pkgs.xdg-desktop-portal-gtk
     ];
-    config.common.default = "wlr";
     config.common = {
-      "org.freedesktop.impl.portal.ScreenCast" = "wlr";
-      "org.freedesktop.impl.portal.Screenshot" = "wlr";
+      # GTK implements the general portal interfaces; wlr is selected only
+      # where it provides Wayland-native ScreenCast/Screenshot handling.
+      default = [ "gtk" ];
+      "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" "gtk" ];
+      "org.freedesktop.impl.portal.Screenshot" = [ "wlr" "gtk" ];
     };
   };
 
