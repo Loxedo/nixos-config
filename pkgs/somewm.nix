@@ -65,8 +65,15 @@ pkgs.stdenv.mkDerivation {
   checkPhase = ''
     runHook preCheck
 
-    ./tests/test-check-mode.sh "$out/bin/somewm"
-    LIBSEAT_BACKEND=noop ./tests/test-signal-term.sh "$out/bin/somewm"
+    somewm_bin="$(find . -type f -name somewm -perm -u+x -print -quit)"
+    if [ -z "$somewm_bin" ]; then
+      echo "error: could not find the built SomeWM executable" >&2
+      find . -maxdepth 3 -type f -perm -u+x -print >&2
+      exit 1
+    fi
+
+    ./tests/test-check-mode.sh "$somewm_bin"
+    LIBSEAT_BACKEND=noop ./tests/test-signal-term.sh "$somewm_bin"
 
     runHook postCheck
   '';
