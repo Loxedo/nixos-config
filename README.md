@@ -20,7 +20,7 @@ This repository is for a **clean single-disk installation**. Windows is no longe
 present on the machine, so the installer intentionally recreates the entire GPT
 partition table on `/dev/nvme0n1`.
 
-Boot the NixOS live USB, open a terminal, and run:
+Boot the NixOS live USB **in UEFI mode**, open a terminal, and run:
 
 ```bash
 git clone https://github.com/Loxedo/nixos-config.git
@@ -45,23 +45,24 @@ component stops the installer before partitioning or formatting the disk.
 After the preflight build succeeds, the installer:
 
 1. requires a normal live-user shell rather than root;
-2. verifies that exactly one internal NVMe disk exists;
-3. verifies that the disk is `/dev/nvme0n1`, matching this host's Disko layout;
-4. prints the current disk layout;
-5. requires the exact confirmation `ERASE-NVME0N1`;
-6. uses the Disko revision pinned in `flake.lock`;
-7. runs Disko to destroy, repartition, format, and mount the disk;
-8. copies the flake into `/mnt/etc/nixos`;
-9. runs `nixos-install --flake /mnt/etc/nixos#nitro-v15`; and
-10. prompts for the `loxedo` user's password before rebooting.
+2. verifies that the installer was booted in UEFI mode;
+3. verifies that exactly one internal NVMe disk exists;
+4. verifies that the disk is `/dev/nvme0n1`, matching this host's Disko layout;
+5. prints the current disk layout;
+6. requires the exact confirmation `ERASE-NVME0N1`;
+7. uses the Disko revision pinned in `flake.lock`;
+8. runs Disko to destroy, repartition, format, and mount the disk;
+9. copies the flake into `/mnt/etc/nixos`;
+10. runs `nixos-install --flake /mnt/etc/nixos#nitro-v15`; and
+11. prompts for the `loxedo` user's password before rebooting.
 
 No password or password hash is committed to the public repository.
 
 ## SomeWM packaging
 
 SomeWM 1.4.3 performs a C-based LGI probe during Meson configuration. The Nix
-package keeps Lua 5.1 and `lua51Packages.lgi` in the same package set and exposes
-LGI's Lua module paths explicitly.
+package uses Lua 5.3 together with the matching `lua53Packages.lgi` package and
+exposes LGI's Lua module paths explicitly.
 
 Do **not** replace `PKG_CONFIG_PATH` inside the derivation. Nix constructs that
 variable from the build inputs. Overriding it with only LGI's directory hides the
@@ -72,8 +73,8 @@ produce misleading `wlroots not found` errors.
 
 ```bash
 ./scripts/validate.sh
-nix flake check
-nix build .#nixosConfigurations.nitro-v15.config.system.build.toplevel --no-link
+nix flake check --no-write-lock-file
+nix build .#nixosConfigurations.nitro-v15.config.system.build.toplevel --no-link --no-write-lock-file
 sudo nixos-rebuild build --flake .#nitro-v15
 ```
 
