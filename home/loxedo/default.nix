@@ -10,8 +10,9 @@ let
   mkdir -p "$out/main"
   cp ${./crystal/autorun.sh} "$out/main/autorun.sh"
   chmod +x "$out/main/autorun.sh"
-  # nuevo:
   cp ${./crystal/scrotter.lua} "$out/ui/popups/scrotter.lua"
+  mkdir -p "$out/ui/lock"
+  cp ${./crystal/lock-init.lua} "$out/ui/lock/init.lua"
 '';
   somewm = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.somewm-stable;
 in
