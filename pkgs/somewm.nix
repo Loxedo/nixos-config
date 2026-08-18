@@ -4,6 +4,12 @@ let
   lua = pkgs.lua5_3;
   lgi = pkgs.lua53Packages.lgi;
   wlroots = pkgs."wlroots_${builtins.replaceStrings [ "." ] [ "_" ] wlrootsVersion}";
+  giTypelibPath = pkgs.lib.makeSearchPath "lib/girepository-1.0" [
+    pkgs.glib
+    pkgs.cairo
+    pkgs.pango
+    pkgs.gdk-pixbuf
+  ];
 in
 pkgs.stdenv.mkDerivation {
   pname = "somewm";
@@ -16,6 +22,7 @@ pkgs.stdenv.mkDerivation {
     wayland-scanner
     git
     gobject-introspection
+    makeWrapper
   ];
 
   buildInputs = with pkgs; [
@@ -48,8 +55,19 @@ pkgs.stdenv.mkDerivation {
     export PKG_CONFIG_SYSTEMD_SYSTEMDSYSTEMUNITDIR="$out/lib/systemd/system"
   '';
 
+  # These variables are required while configuring/testing SomeWM and must
+  # also be present when the installed compositor starts Crystal at runtime.
+  # The previous version only exposed them in the derivation's build
+  # environment, so a normal user session could fail at `require("lgi")`.
   LUA_PATH = "${lgi}/share/lua/5.3/?.lua;${lgi}/share/lua/5.3/?/init.lua;;";
   LUA_CPATH = "${lgi}/lib/lua/5.3/?.so;${lgi}/lib/lua/5.3/lgi/?.so;;";
+
+  postInstall = ''
+    wrapProgram "$out/bin/somewm" \
+      --set LUA_PATH "${lgi}/share/lua/5.3/?.lua;${lgi}/share/lua/5.3/?/init.lua;;" \
+      --set LUA_CPATH "${lgi}/lib/lua/5.3/?.so;${lgi}/lib/lua/5.3/lgi/?.so;;" \
+      --set GI_TYPELIB_PATH "${giTypelibPath}"
+  '';
 
   mesonBuildType = "release";
 
