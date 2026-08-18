@@ -92,6 +92,32 @@ if [[ "$disk" != "$expected_disk" ]]; then
   exit 1
 fi
 
+# SAFETY GUARD: this Disko configuration destroys the entire target disk.
+# Never allow that mode to run when Windows partitions are present. The
+# Windows NTFS partition, Microsoft Reserved partition, and Windows recovery
+# partition must be preserved on the user's dual-boot machine. This guard is
+# intentionally conservative: it refuses the install instead of guessing
+# which existing Linux partition is safe to reuse.
+windows_partitions="$(
+  lsblk -nrpo NAME,FSTYPE,PARTTYPE "$disk" |
+    awk 'tolower($2) == "ntfs" ||
+         toupper($3) == "E3C9E316-0B5C-4DB8-817D-F92DF00215AE" ||
+         toupper($3) == "DE94BBA4-06D1-4D40-A16A-BFD50179D6AC" ||
+         toupper($3) == "EBD0A0A2-B9E5-4433-87C0-68B6B72699C7" { print $1 }'
+)"
+
+if [[ -n "$windows_partitions" ]]; then
+  echo >&2
+  echo 'REFUSING TO RUN DESTRUCTIVE DISKO INSTALL.' >&2
+  echo "The target disk $disk contains Windows partitions:" >&2
+  printf '  %s\n' "$windows_partitions" >&2
+  echo >&2
+  echo 'This install.sh uses Disko in destroy,format,mount mode and would erase the entire disk.' >&2
+  echo 'The Windows NTFS/MSR/recovery partitions must be preserved.' >&2
+  echo 'Use a partition-preserving Disko layout before continuing.' >&2
+  exit 1
+fi
+
 echo
 printf 'Target disk: %s\n' "$disk"
 echo
