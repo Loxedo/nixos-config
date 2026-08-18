@@ -3,8 +3,14 @@
 -- SomeWM implements the AwesomeWM Lua API, so Aura's Lua modules can remain
 -- upstream. The session wrapper prepares the Wayland environment and cache.
 
+local awful = require "awful"
 local gears = require "gears"
 local beautiful = require "beautiful"
+
+-- Preserve Crystal's startup contract: SomeWM must launch main/autorun.sh.
+-- The Wayland-safe replacement imports the compositor's runtime environment
+-- into the systemd user manager after WAYLAND_DISPLAY has been created.
+awful.spawn.with_shell("bash ~/.config/awesome/main/autorun.sh")
 
 -- Keep manual `somewm --config` launches deterministic too: Crystal's setup
 -- module expects these parent directories to exist before it writes settings.
