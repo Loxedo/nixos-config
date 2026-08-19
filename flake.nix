@@ -21,7 +21,10 @@
       flake = false;
     };
 
-    somewm-stable.url = "github:trip-zip/somewm/release/1.4";
+    somewm-stable = {
+      url = "github:trip-zip/somewm/release/1.4";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, disko, nix-flatpak, ... }:

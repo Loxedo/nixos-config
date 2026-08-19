@@ -6,6 +6,7 @@
 local awful = require "awful"
 local gears = require "gears"
 local beautiful = require "beautiful"
+local awful = require "awful"
 
 -- Preserve Crystal's startup contract: SomeWM must launch main/autorun.sh.
 -- The Wayland-safe replacement imports the compositor's runtime environment
@@ -16,6 +17,11 @@ awful.spawn.with_shell("bash ~/.config/awesome/main/autorun.sh")
 -- module expects these parent directories to exist before it writes settings.
 local cache_dir = gears.filesystem.get_cache_dir()
 os.execute('mkdir -p "' .. cache_dir .. 'json" "' .. cache_dir .. 'lock"')
+
+-- Crystal's upstream rc.lua starts main/autorun.sh before loading the rest of
+-- the desktop. Keep that startup hook, but use the configuration directory so
+-- it also works when Home Manager installs the config through /nix/store.
+awful.spawn.with_shell(gears.filesystem.get_configuration_dir() .. "main/autorun.sh")
 
 require "setup":generate()
 beautiful.init(gears.filesystem.get_configuration_dir() .. "theme/init.lua")
