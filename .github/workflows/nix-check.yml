@@ -23,17 +23,12 @@ jobs:
           bash -n install.sh
           bash -n scripts/hardware-check.sh
           bash -n home/loxedo/crystal/autorun.sh
-
-          mapfile -d '' crystal_lua_files < <(
-            find home/loxedo/crystal -type f -name '*.lua' -print0
-          )
-
           nix shell nixpkgs#lua5_3 --command bash -c '
             set -euo pipefail
-            for file do
-              lua -e "assert(loadfile(arg[1]))" -- "$file"
-            done
-          ' bash "${crystal_lua_files[@]}"
+            while IFS= read -r -d "" file; do
+              LUA_FILE="$file" lua -e "assert(loadfile(os.getenv(\"LUA_FILE\")))"
+            done < <(find home/loxedo/crystal -type f -name "*.lua" -print0)
+          '
 
       - name: Evaluate and build configuration
         shell: bash
