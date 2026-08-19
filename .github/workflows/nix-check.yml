@@ -24,8 +24,9 @@ jobs:
           bash -n scripts/hardware-check.sh
           bash -n home/loxedo/crystal/autorun.sh
           nix shell nixpkgs#lua5_3 --command bash -c '
+            set -euo pipefail
             while IFS= read -r -d "" file; do
-              lua -e '\''assert(loadfile(arg[1]))'\'' "$file"
+              LUA_FILE="$file" lua -e "assert(loadfile(os.getenv(\"LUA_FILE\")))"
             done < <(find home/loxedo/crystal -type f -name "*.lua" -print0)
           '
 
