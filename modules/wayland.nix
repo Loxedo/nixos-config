@@ -22,6 +22,15 @@ let
         XDG_SESSION_TYPE 2>/dev/null || true
     fi
 
+    # Propagate the compositor's Wayland environment to D-Bus-activated user
+    # services and desktop portals. Without this, portals may start without a
+    # valid WAYLAND_DISPLAY even though the compositor session itself is fine.
+    ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd \
+      WAYLAND_DISPLAY \
+      XDG_CURRENT_DESKTOP \
+      XDG_SESSION_DESKTOP \
+      XDG_SESSION_TYPE 2>/dev/null || true
+
     exec ${pkgs.dbus}/bin/dbus-run-session -- ${somewm}/bin/somewm
   '';
 in
