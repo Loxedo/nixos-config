@@ -59,6 +59,13 @@ pkgs.stdenv.mkDerivation {
   LUA_PATH = "${lgi}/share/lua/5.3/?.lua;${lgi}/share/lua/5.3/?/init.lua;;";
   LUA_CPATH = "${lgi}/lib/lua/5.3/?.so;${lgi}/lib/lua/5.3/lgi/?.so;;";
 
+  # The release tarball does not include the upstream test scripts. Keep the
+  # small regression suite in this repository so the Nix build stays
+  # self-contained and reproducible.
+  postPatch = ''
+    install -Dm755 ${../tests/somewm-check.sh} tests/somewm-check.sh
+  '';
+
   postInstall = ''
     wrapProgram "$out/bin/somewm" \
       --set LUA_PATH "${lgi}/share/lua/5.3/?.lua;${lgi}/share/lua/5.3/?/init.lua;;" \
@@ -93,8 +100,7 @@ pkgs.stdenv.mkDerivation {
       exit 1
     fi
 
-    ./tests/test-check-mode.sh "$somewm_bin"
-    LIBSEAT_BACKEND=noop ./tests/test-signal-term.sh "$somewm_bin"
+    bash tests/somewm-check.sh "$somewm_bin"
 
     runHook postCheck
   '';
