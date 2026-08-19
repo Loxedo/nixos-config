@@ -92,6 +92,28 @@ if [[ "$disk" != "$expected_disk" ]]; then
   exit 1
 fi
 
+# This Disko configuration is whole-disk destructive. Refuse to proceed while
+# recognizable Windows partitions are present so the installer cannot erase a
+# dual-boot installation by accident. This check is intentionally conservative.
+windows_partitions="$(
+  lsblk -nrpo NAME,FSTYPE,PARTTYPE "$disk" |
+    awk 'tolower($2) == "ntfs" ||
+         toupper($3) == "E3C9E316-0B5C-4DB8-817D-F92DF00215AE" ||
+         toupper($3) == "DE94BBA4-06D1-4D40-A16A-BFD50179D6AC" ||
+         toupper($3) == "EBD0A0A2-B9E5-4433-87C0-68B6B72699C7" { print $1 }'
+)"
+
+if [[ -n "$windows_partitions" ]]; then
+  echo >&2
+  echo 'REFUSING TO RUN DESTRUCTIVE DISKO INSTALL.' >&2
+  echo "The target disk $disk contains recognizable Windows partitions:" >&2
+  printf '  %s\n' "$windows_partitions" >&2
+  echo >&2
+  echo 'This installer destroys and recreates the entire disk partition table.' >&2
+  echo 'Remove/preserve the Windows installation explicitly before using the destructive layout.' >&2
+  exit 1
+fi
+
 echo
 printf 'Target disk: %s\n' "$disk"
 echo
