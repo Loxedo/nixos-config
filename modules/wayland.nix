@@ -20,6 +20,12 @@ let
         XDG_CURRENT_DESKTOP \
         XDG_SESSION_DESKTOP \
         XDG_SESSION_TYPE 2>/dev/null || true
+
+      # SomeWM is a standalone compositor launched directly by greetd, so it
+      # must explicitly announce that the graphical user session is active.
+      # NixOS user services such as OpenRazer are commonly wanted by this
+      # target and otherwise remain inactive for the entire session.
+      systemctl --user start graphical-session.target 2>/dev/null || true
     fi
 
     exec ${pkgs.dbus}/bin/dbus-run-session -- ${somewm}/bin/somewm
