@@ -14,15 +14,25 @@ let
     cache_dir="$cache_home/awesome"
     mkdir -p "$cache_dir/json" "$cache_dir/lock" "$HOME/Pictures/Screenshots"
 
-    if command -v systemctl >/dev/null 2>&1; then
-      systemctl --user import-environment \
-        WAYLAND_DISPLAY \
-        XDG_CURRENT_DESKTOP \
-        XDG_SESSION_DESKTOP \
-        XDG_SESSION_TYPE 2>/dev/null || true
-    fi
+    # Create the D-Bus session before touching systemd --user. The user manager
+    # discovers the graphical-session target through this session bus.
+    exec ${pkgs.dbus}/bin/dbus-run-session -- sh -c '
+      set -eu
 
-    exec ${pkgs.dbus}/bin/dbus-run-session -- ${somewm}/bin/somewm
+      if command -v systemctl >/dev/null 2>&1; then
+        systemctl --user import-environment \
+          WAYLAND_DISPLAY \
+          XDG_CURRENT_DESKTOP \
+          XDG_SESSION_DESKTOP \
+          XDG_SESSION_TYPE 2>/dev/null || true
+
+        # SomeWM is launched directly by greetd, so explicitly activate the
+        # graphical user target after the D-Bus user session exists.
+        systemctl --user start graphical-session.target 2>/dev/null || true
+      fi
+
+      exec ${somewm}/bin/somewm
+    '
   '';
 in
 {
