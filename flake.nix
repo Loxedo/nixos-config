@@ -21,7 +21,13 @@
       flake = false;
     };
 
-    somewm-stable.url = "github:trip-zip/somewm/release/1.4";
+    # The package is built with this repository's nixpkgs, so keep SomeWM's
+    # flake input graph on the same nixpkgs revision instead of pulling a
+    # second unstable nixpkgs into the lockfile.
+    somewm-stable = {
+      url = "github:trip-zip/somewm/release/1.4";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, disko, nix-flatpak, ... }:
