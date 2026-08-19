@@ -15,11 +15,16 @@ bash -n scripts/hardware-check.sh
 bash -n home/loxedo/crystal/autorun.sh
 
 # Parse repository-owned Crystal Lua files with the exact Lua ABI used by SomeWM.
+mapfile -d '' crystal_lua_files < <(
+  find home/loxedo/crystal -type f -name '*.lua' -print0
+)
+
 nix shell nixpkgs#lua5_3 --command bash -c '
-  while IFS= read -r -d "" file; do
-    lua -e '\''assert(loadfile(arg[1]))'\'' "$file"
-  done < <(find home/loxedo/crystal -type f -name "*.lua" -print0)
-'
+  set -euo pipefail
+  for file do
+    lua -e "assert(loadfile(arg[1]))" -- "$file"
+  done
+' bash "${crystal_lua_files[@]}"
 
 # The repository intentionally has one installation entrypoint.
 if [[ -e scripts/install.sh ]]; then
