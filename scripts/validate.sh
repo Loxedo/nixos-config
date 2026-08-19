@@ -12,6 +12,14 @@ export NIX_CONFIG='experimental-features = nix-command flakes'
 
 bash -n install.sh
 bash -n scripts/hardware-check.sh
+bash -n home/loxedo/crystal/autorun.sh
+
+# Parse repository-owned Crystal Lua files with the exact Lua ABI used by SomeWM.
+nix shell nixpkgs#lua5_3 --command bash -c '
+  while IFS= read -r -d "" file; do
+    lua -e '\''assert(loadfile(arg[1]))'\'' "$file"
+  done < <(find home/loxedo/crystal -type f -name "*.lua" -print0)
+'
 
 # The repository intentionally has one installation entrypoint.
 if [[ -e scripts/install.sh ]]; then
@@ -44,4 +52,4 @@ if [[ "$lock_before" != "$lock_after" ]]; then
   exit 1
 fi
 
-echo 'Static, lockfile, system-build, SomeWM test-suite, and package-build validation passed.'
+echo 'Static, Lua-syntax, lockfile, system-build, SomeWM test-suite, and package-build validation passed.'
