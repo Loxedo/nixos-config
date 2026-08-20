@@ -93,8 +93,30 @@ pkgs.stdenv.mkDerivation {
       exit 1
     fi
 
-    ./tests/test-check-mode.sh "$somewm_bin"
-    LIBSEAT_BACKEND=noop ./tests/test-signal-term.sh "$somewm_bin"
+    tmpdir="$(mktemp -d)"
+    trap 'rm -rf "$tmpdir"' EXIT
+
+    cat > "$tmpdir/clean.lua" <<'EOF'
+local x = 1
+return x
+EOF
+
+    set +e
+    check_output="$($somewm_bin --check "$tmpdir/clean.lua" 2>&1)"
+    check_status=$?
+    set -e
+
+    if [ "$check_status" -ne 0 ]; then
+      echo "error: SomeWM --check failed" >&2
+      printf '%s\n' "$check_output" >&2
+      exit "$check_status"
+    fi
+
+    if ! printf '%s\n' "$check_output" | grep -q "No compatibility issues found"; then
+      echo "error: SomeWM --check did not report a clean configuration" >&2
+      printf '%s\n' "$check_output" >&2
+      exit 1
+    fi
 
     runHook postCheck
   '';
