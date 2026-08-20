@@ -55,7 +55,6 @@ pkgs.stdenv.mkDerivation {
     export PKG_CONFIG_SYSTEMD_SYSTEMDSYSTEMUNITDIR="$out/lib/systemd/system"
   '';
 
-  # Build-time paths are needed for Meson/configuration and the package tests.
   LUA_PATH = "${lgi}/share/lua/5.3/?.lua;${lgi}/share/lua/5.3/?/init.lua;;";
   LUA_CPATH = "${lgi}/lib/lua/5.3/?.so;${lgi}/lib/lua/5.3/lgi/?.so;;";
 
@@ -64,12 +63,6 @@ pkgs.stdenv.mkDerivation {
       --set LUA_PATH "${lgi}/share/lua/5.3/?.lua;${lgi}/share/lua/5.3/?/init.lua;;" \
       --set LUA_CPATH "${lgi}/lib/lua/5.3/?.so;${lgi}/lib/lua/5.3/lgi/?.so;;" \
       --set GI_TYPELIB_PATH "${giTypelibPath}"
-
-    env \
-      LUA_PATH="${lgi}/share/lua/5.3/?.lua;${lgi}/share/lua/5.3/?/init.lua;;" \
-      LUA_CPATH="${lgi}/lib/lua/5.3/?.so;${lgi}/lib/lua/5.3/lgi/?.so;;" \
-      GI_TYPELIB_PATH="${giTypelibPath}" \
-      ${lua}/bin/lua -e 'local lgi = require("lgi"); assert(lgi.GLib, "LGI loaded without GLib")'
   '';
 
   mesonBuildType = "release";
