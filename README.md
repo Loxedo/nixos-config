@@ -77,18 +77,3 @@ nix flake check --no-write-lock-file
 nix build .#nixosConfigurations.nitro-v15.config.system.build.toplevel --no-link --no-write-lock-file
 sudo nixos-rebuild build --flake .#nitro-v15
 ```
-
-## GPU policy
-
-- Intel handles the normal desktop workload.
-- NVIDIA is available through PRIME render offload.
-- Explicit dGPU execution is available through `nvidia-offload` / `nvidia-run`.
-
-## Memory policy
-
-- zram: up to 75% of physical RAM, high priority
-- NVMe swapfile: 16 GiB, low priority
-- `vm.swappiness=180`
-- `systemd-oomd` enabled
-
-The memory configuration is intentionally aggressive for heavy multitasking and gaming.
