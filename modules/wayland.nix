@@ -14,23 +14,30 @@ let
     cache_dir="$cache_home/awesome"
     mkdir -p "$cache_dir/json" "$cache_dir/lock" "$HOME/Pictures/Screenshots"
 
-    if command -v systemctl >/dev/null 2>&1; then
-      systemctl --user import-environment \
+    # systemd --user talks to the user's real bus at $XDG_RUNTIME_DIR/bus.
+    # Do not run these commands inside dbus-run-session: that command creates
+    # a separate private session bus which is not the systemd user-manager bus.
+    user_bus="unix:path=''${XDG_RUNTIME_DIR:-}/bus"
+    if [ -n "''${XDG_RUNTIME_DIR:-}" ] && [ -S "$XDG_RUNTIME_DIR/bus" ] && command -v systemctl >/dev/null 2>&1; then
+      DBUS_SESSION_BUS_ADDRESS="$user_bus" systemctl --user import-environment \
+        WAYLAND_DISPLAY \
+        XDG_CURRENT_DESKTOP \
+        XDG_SESSION_DESKTOP \
+        XDG_SESSION_TYPE 2>/dev/null || true
+
+      # SomeWM is launched from greetd rather than by the user manager, so
+      # explicitly activate the graphical-session target on the real user bus.
+      DBUS_SESSION_BUS_ADDRESS="$user_bus" systemctl --user start graphical-session.target 2>/dev/null || true
+
+      DBUS_SESSION_BUS_ADDRESS="$user_bus" ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd \
         WAYLAND_DISPLAY \
         XDG_CURRENT_DESKTOP \
         XDG_SESSION_DESKTOP \
         XDG_SESSION_TYPE 2>/dev/null || true
     fi
 
-    # Propagate the compositor's Wayland environment to D-Bus-activated user
-    # services and desktop portals. Without this, portals may start without a
-    # valid WAYLAND_DISPLAY even though the compositor session itself is fine.
-    ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd \
-      WAYLAND_DISPLAY \
-      XDG_CURRENT_DESKTOP \
-      XDG_SESSION_DESKTOP \
-      XDG_SESSION_TYPE 2>/dev/null || true
-
+    # Some applications need a session D-Bus even when greetd did not create
+    # one. dbus-run-session provides that bus for SomeWM and its children.
     exec ${pkgs.dbus}/bin/dbus-run-session -- ${somewm}/bin/somewm
   '';
 in
