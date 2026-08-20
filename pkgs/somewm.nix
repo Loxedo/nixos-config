@@ -101,8 +101,10 @@ local x = 1
 return x
 EOF
 
+    set +e
     check_output="$($somewm_bin --check "$tmpdir/clean.lua" 2>&1)"
     check_status=$?
+    set -e
 
     if [ "$check_status" -ne 0 ]; then
       echo "error: SomeWM --check failed" >&2
