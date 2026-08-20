@@ -88,7 +88,6 @@ echo '  5. Set the loxedo password.'
 echo
 echo 'The installer does NOT run a preflight build in the live ISO.'
 echo 'This is what prevents the copy-to-RAM live environment from filling up.'
-echo
 echo 'Type exactly: ERASE-NVME0N1'
 read -r -p '> ' confirmation
 
@@ -99,9 +98,12 @@ fi
 
 sudo umount -R /mnt 2>/dev/null || true
 
-# Use the exact Disko revision pinned by the repository lock file. This avoids
-# silently selecting a different Disko release during installation.
-disko_rev="$(nix eval --raw --no-write-lock-file --expr 'let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in lock.nodes.disko.locked.rev')"
+# IMPORTANT: do not parse flake.lock with a pure nix eval here. The installer
+# is executed from /home/nixos/nixos-config, and pure evaluation rejects
+# absolute/local paths such as /home/nixos/nixos-config/flake.lock.
+# Instead, use --impure only for reading the local lock file. No system build
+# happens here; this merely extracts the already-pinned Disko commit.
+disko_rev="$(nix eval --impure --raw --no-write-lock-file --expr 'let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in lock.nodes.disko.locked.rev')"
 disko_ref="github:nix-community/disko/${disko_rev}"
 
 echo
