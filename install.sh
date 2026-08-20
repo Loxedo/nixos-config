@@ -3,11 +3,11 @@ set -euo pipefail
 
 # Clean-install workflow for the Acer Nitro V15.
 #
-# IMPORTANT: this script is designed for a NixOS Live USB, including
-# copy-to-RAM/iso-to-RAM boots. It deliberately does NOT pre-build the whole
-# system in the live environment. nixos-install builds the configuration in
-# the target filesystem (/mnt/nix/store), so the live ISO's RAM-backed /nix
-# store is not consumed by the large desktop closure.
+# Designed for a NixOS Live USB, including copy-to-RAM/iso-to-RAM boots.
+# It deliberately does NOT pre-build the system in the live environment.
+# The target filesystem is mounted first, and nixos-install is pointed at the
+# target /mnt so the large closure is stored on the SSD instead of the
+# RAM-backed live /nix.
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$repo_root"
@@ -17,16 +17,12 @@ if [[ $EUID -eq 0 ]]; then
   exit 1
 fi
 
-# The installed configuration uses systemd-boot, therefore the installer must
-# itself be booted in UEFI mode.
 if [[ ! -d /sys/firmware/efi ]]; then
   echo "The NixOS live environment is not booted in UEFI mode." >&2
   echo "Reboot the installer USB using its UEFI boot entry and run ./install.sh again." >&2
   exit 1
 fi
 
-# Enable flakes for the live installer. This only affects the current process
-# tree; the target system gets its own declarative Nix configuration.
 export NIX_CONFIG='experimental-features = nix-command flakes'
 
 for cmd in nix lsblk nixos-install mountpoint sudo; do
@@ -41,10 +37,6 @@ if ! nix --version >/dev/null 2>&1; then
   exit 1
 fi
 
-# The installer is intentionally network-first: the repository is public, so
-# there is no need to copy the complete flake into the RAM-backed live system.
-# nixos-install fetches the exact GitHub flake directly and builds into the
-# target /mnt/nix/store after Disko has mounted it.
 flake_ref="github:Loxedo/nixos-config#nitro-v15"
 
 mapfile -t nvme_disks < <(
@@ -98,11 +90,9 @@ fi
 
 sudo umount -R /mnt 2>/dev/null || true
 
-# IMPORTANT: do not parse flake.lock with a pure nix eval here. The installer
-# is executed from /home/nixos/nixos-config, and pure evaluation rejects
-# absolute/local paths such as /home/nixos/nixos-config/flake.lock.
-# Instead, use --impure only for reading the local lock file. No system build
-# happens here; this merely extracts the already-pinned Disko commit.
+# Read the pinned Disko revision from the local flake.lock. --impure is needed
+# because this expression intentionally reads a local file from repo_root.
+# This does not build the system or write to the live-store.
 disko_rev="$(nix eval --impure --raw --no-write-lock-file --expr 'let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in lock.nodes.disko.locked.rev')"
 disko_ref="github:nix-community/disko/${disko_rev}"
 
@@ -121,9 +111,6 @@ mountpoint -q /mnt || {
   exit 1
 }
 
-# Do not copy the repository into /mnt. That only duplicates the flake and
-# wastes space on the target. nixos-install fetches the public GitHub flake
-# directly and writes its resulting closure to /mnt/nix/store.
 echo
 echo 'Target filesystem is mounted.'
 df -h /mnt /mnt/nix || true
@@ -131,13 +118,18 @@ df -h /mnt /mnt/nix || true
 echo
 echo 'Installing NixOS directly from the GitHub flake...'
 echo 'Build/store location: /mnt/nix/store (target SSD)'
+
+# nixos-install may try to update the fetched GitHub flake lock file. During a
+# clean install the flake is intentionally read-only, so explicitly disable
+# lock-file writes. This also prevents the installer from trying to modify a
+# GitHub-fetched flake in the live environment.
 sudo env NIX_CONFIG="$NIX_CONFIG" nixos-install \
+  --no-write-lock-file \
   --no-root-password \
   --flake "$flake_ref"
 
-# The declarative user intentionally has no password in the public repository.
-# Set it interactively inside the freshly installed system instead of storing
-# a password or password hash in Git.
+# The public repository does not contain a password hash. Set the password
+# interactively inside the freshly installed system instead.
 echo
 echo 'Set the password for the loxedo user before rebooting.'
 sudo nixos-enter --root /mnt -c 'passwd loxedo'
