@@ -14,23 +14,30 @@ let
     cache_dir="$cache_home/awesome"
     mkdir -p "$cache_dir/json" "$cache_dir/lock" "$HOME/Pictures/Screenshots"
 
-    if command -v systemctl >/dev/null 2>&1; then
-      systemctl --user import-environment \
+    # systemd --user must use the real user-manager bus. dbus-run-session
+    # creates a separate application bus and must not be used for these calls.
+    user_bus="unix:path=''${XDG_RUNTIME_DIR:-}/bus"
+    if [ -n "''${XDG_RUNTIME_DIR:-}" ] && [ -S "$XDG_RUNTIME_DIR/bus" ] && command -v systemctl >/dev/null 2>&1; then
+      DBUS_SESSION_BUS_ADDRESS="$user_bus" systemctl --user import-environment \
         WAYLAND_DISPLAY \
         XDG_CURRENT_DESKTOP \
         XDG_SESSION_DESKTOP \
         XDG_SESSION_TYPE 2>/dev/null || true
-    fi
+
+      # greetd launches SomeWM directly, so explicitly activate the graphical
+      # user target instead of assuming a desktop session manager did it.
+      DBUS_SESSION_BUS_ADDRESS="$user_bus" systemctl --user start graphical-session.target 2>/dev/null || true
 
     # Propagate the compositor's Wayland environment to D-Bus-activated user
-    # services and desktop portals. Without this, portals may start without a
-    # valid WAYLAND_DISPLAY even though the compositor session itself is fine.
-    ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd \
+    # services and desktop portals through the real user-manager bus.
+    DBUS_SESSION_BUS_ADDRESS="$user_bus" ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd \
       WAYLAND_DISPLAY \
       XDG_CURRENT_DESKTOP \
       XDG_SESSION_DESKTOP \
       XDG_SESSION_TYPE 2>/dev/null || true
+    fi
 
+    # Give SomeWM and its children a private application/session bus.
     exec ${pkgs.dbus}/bin/dbus-run-session -- ${somewm}/bin/somewm
   '';
 in
