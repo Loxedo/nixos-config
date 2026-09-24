@@ -37,7 +37,10 @@ if ! nix --version >/dev/null 2>&1; then
   exit 1
 fi
 
-flake_ref="github:Loxedo/nixos-config#nitro-v15"
+# Install the exact checkout used to run this script. Using a moving GitHub
+# ref could install a different revision than the Disko/config files inspected
+# locally.
+flake_ref="$repo_root#nitro-v15"
 
 mapfile -t nvme_disks < <(
   lsblk -dnpo NAME,TYPE | awk '$2 == "disk" && $1 ~ /^\/dev\/nvme[0-9]+n[0-9]+$/ {print $1}'
@@ -75,7 +78,7 @@ echo 'After confirmation, the process is automatic:'
 echo '  1. Unmount old filesystems.'
 echo '  2. Destroy and repartition the NVMe with Disko.'
 echo '  3. Mount /mnt, including the target /mnt/nix store.'
-echo '  4. Install directly from the GitHub flake.'
+echo '  4. Install the checked-out flake from this repository.'
 echo '  5. Set the loxedo password.'
 echo
 echo 'The installer does NOT run a preflight build in the live ISO.'
@@ -116,7 +119,7 @@ echo 'Target filesystem is mounted.'
 df -h /mnt /mnt/nix || true
 
 echo
-echo 'Installing NixOS directly from the GitHub flake...'
+echo 'Installing NixOS from the exact checked-out flake...'
 echo 'Build/store location: /mnt/nix/store (target SSD)'
 
 # nixos-install may try to update the fetched GitHub flake lock file. During a
