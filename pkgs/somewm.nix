@@ -37,7 +37,7 @@ pkgs.stdenv.mkDerivation {
     pango
     gdk-pixbuf
     pam
-    lua
+    lua5_3
     pixman
     libdisplay-info
     udev
